@@ -26,6 +26,7 @@ from constructai.extraction.text_providers import (
 )
 from constructai.extraction.vision import OpenCVFloorPlanDetector, SUPPORTED_VISUAL_EXTENSIONS
 from constructai.agents.mapping_agent import MappingAgent
+from constructai.agents.resource_planner import ResourcePlanner
 
 
 app = FastAPI(
@@ -42,6 +43,7 @@ boq_generator = BOQGenerator()
 boq_review_service = BOQReviewService()
 boq_validator = BOQValidator()
 mapping_agent = MappingAgent()
+resource_planner = ResourcePlanner(mapping_agent)
 extraction_sessions: dict[str, ExtractionResult] = {}
 extraction_revisions: dict[str, int] = {}
 boq_sessions: dict[str, BOQ] = {}
@@ -354,6 +356,29 @@ def set_boq_recipe_mapping(boq_id: str, mapping: BOQRecipeMapping) -> JSONRespon
             "work_key": mapping.work_key,
             "matched_work_item": work["text"],
         }
+    )
+
+
+@app.post("/boqs/{boq_id}/resources", tags=["resources"])
+def generate_reviewed_resources(boq_id: str) -> JSONResponse:
+    boq = boq_sessions.get(boq_id)
+    if boq is None:
+        raise HTTPException(status_code=404, detail="BOQ review session was not found")
+    _require_current_boq(boq)
+    if boq.status.value != "APPROVED":
+        raise HTTPException(status_code=409, detail="The BOQ must be approved before estimating resources")
+
+    overrides = boq_recipe_overrides.get(boq_id, {})
+    bom = mapping_agent.run(boq, overrides)
+    if bom.validation["errors"]:
+        details = "; ".join(bom.validation["errors"])
+        raise HTTPException(
+            status_code=422,
+            detail=f"Resolve BOM mapping errors before estimating labour and equipment: {details}",
+        )
+
+    return JSONResponse(
+        content=jsonable_encoder(resource_planner.generate(boq, overrides))
     )
 
 

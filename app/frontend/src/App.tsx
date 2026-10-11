@@ -1,6 +1,6 @@
 import { ChangeEvent, useEffect, useRef, useState } from "react";
 
-type Screen = "upload" | "extraction" | "boq" | "approval" | "bom";
+type Screen = "upload" | "extraction" | "boq" | "approval" | "bom" | "resources";
 type BOQStatus = "DRAFT" | "REVIEW" | "APPROVED";
 type ElementReviewStatus = "pending" | "approved" | "rejected";
 
@@ -89,6 +89,28 @@ type MappingRecipe = {
   unit: string;
 };
 
+type ResourceLine = {
+  "BOQ item": string;
+  "Work item": string;
+  Resource: string;
+  Hours: number;
+  "Hours per BOQ unit": number;
+  "Rate (Rs/hour)": number;
+  "Estimated cost (Rs)": number;
+  Assumption: string;
+};
+
+type ResourcePlan = {
+  assumption_notice: string;
+  mappings: BOMResult["mapping"];
+  labour: ResourceLine[];
+  equipment: ResourceLine[];
+  warnings: string[];
+  labour_cost: number;
+  equipment_cost: number;
+  total_cost: number;
+};
+
 const API_BASE = import.meta.env.VITE_API_BASE ?? "/api";
 const unitOptions = ["m", "lm", "m2", "m3", "pcs", "nos", "unit", "kg", "ton", "l", "litre"];
 const steps: { id: Screen; label: string; number: string }[] = [
@@ -97,6 +119,7 @@ const steps: { id: Screen; label: string; number: string }[] = [
   { id: "boq", label: "BOQ review", number: "03" },
   { id: "approval", label: "Approval", number: "04" },
   { id: "bom", label: "BOM & mapping", number: "05" },
+  { id: "resources", label: "Labour & equipment", number: "06" },
 ];
 
 async function request<T>(path: string, init?: RequestInit): Promise<T> {
@@ -115,7 +138,8 @@ function App() {
   const [extraction, setExtraction] = useState<ExtractionResult | null>(null);
   const [boq, setBOQ] = useState<BOQ | null>(null);
   const [bom, setBOM] = useState<BOMResult | null>(null);
-  const [loading, setLoading] = useState<"extract" | "boq" | "review" | "bom" | null>(null);
+  const [resources, setResources] = useState<ResourcePlan | null>(null);
+  const [loading, setLoading] = useState<"extract" | "boq" | "review" | "bom" | "resources" | null>(null);
   const [error, setError] = useState("");
 
   const extract = async (selectedFile: File) => {
@@ -123,6 +147,7 @@ function App() {
     setError("");
     setBOQ(null);
     setBOM(null);
+    setResources(null);
     setLoading("extract");
     const form = new FormData();
     form.append("file", selectedFile);
@@ -173,6 +198,7 @@ function App() {
       return { ...current, elements: next };
     });
     setBOM(null);
+    setResources(null);
     setBOQ(null);
   };
 
@@ -318,8 +344,23 @@ function App() {
     }
   };
 
+  const generateResources = async () => {
+    if (!boq) return;
+    setError("");
+    setLoading("resources");
+    try {
+      const result = await request<ResourcePlan>(`/boqs/${boq.boq_id}/resources`, { method: "POST" });
+      setResources(result);
+      setScreen("resources");
+    } catch (requestError) {
+      setError(requestError instanceof Error ? requestError.message : "Resource estimate failed");
+    } finally {
+      setLoading(null);
+    }
+  };
+
   const activeStep = steps.findIndex((step) => step.id === screen);
-  const canNavigate = (step: Screen) => step === "upload" || (step === "extraction" && !!extraction) || (step === "boq" && !!boq) || (step === "approval" && boq?.status === "APPROVED") || (step === "bom" && !!bom);
+  const canNavigate = (step: Screen) => step === "upload" || (step === "extraction" && !!extraction) || (step === "boq" && !!boq) || (step === "approval" && boq?.status === "APPROVED") || (step === "bom" && !!bom) || (step === "resources" && !!resources);
 
   return (
     <main className="app-shell">
@@ -346,7 +387,7 @@ function App() {
 
         <section className="content">
           <div className="content-header">
-            <div><p className="eyebrow">Technical intelligence / {steps[activeStep].number}</p><h1>{screen === "upload" ? "Start with the source drawing." : screen === "extraction" ? "Review extracted elements." : screen === "boq" ? "Shape the draft BOQ." : screen === "approval" ? "BOQ is ready for approval." : "Map quantities to materials."}</h1></div>
+            <div><p className="eyebrow">Technical intelligence / {steps[activeStep].number}</p><h1>{screen === "upload" ? "Start with the source drawing." : screen === "extraction" ? "Review extracted elements." : screen === "boq" ? "Shape the draft BOQ." : screen === "approval" ? "BOQ is ready for approval." : screen === "bom" ? "Map quantities to materials." : "Plan labour and equipment."}</h1></div>
             {boq && <span className={`status-badge ${boq.status.toLowerCase()}`}><span /> {boq.status}</span>}
           </div>
 
@@ -356,7 +397,8 @@ function App() {
           {screen === "extraction" && extraction && <HumanReviewExtractionScreen extraction={extraction} loading={loading === "boq" || loading === "review"} onEdit={updateExtractionElement} onReview={reviewElement} onGenerate={generateBOQ} />}
           {screen === "boq" && boq && <PersistentBOQScreen boq={boq} onEdit={updateItem} onSave={saveBOQItem} onSubmit={submitForReview} onApprove={approve} />}
           {screen === "approval" && boq && <ApprovalScreen boq={boq} loading={loading === "bom"} onBack={() => setScreen("boq")} onGenerateBOM={generateBOM} />}
-          {screen === "bom" && boq && bom && <BOMScreen boq={boq} bom={bom} loading={loading === "bom"} onBack={() => setScreen("approval")} onReviewBOQ={() => setScreen("extraction")} onMapItem={mapBOQItem} onError={setError} />}
+          {screen === "bom" && boq && bom && <BOMScreen boq={boq} bom={bom} loading={loading === "resources"} onBack={() => setScreen("approval")} onReviewBOQ={() => setScreen("extraction")} onMapItem={mapBOQItem} onError={setError} onGenerateResources={generateResources} />}
+          {screen === "resources" && boq && resources && <ResourcesScreen boq={boq} resources={resources} onBack={() => setScreen("bom")} />}
         </section>
       </div>
     </main>
@@ -440,7 +482,7 @@ function ApprovalScreen({ boq, loading, onBack, onGenerateBOM }: { boq: BOQ; loa
   return <div className="screen approval-screen"><div className="approval-mark">✓</div><p className="eyebrow">Final status</p><h2>Approved BOQ</h2><p className="approval-copy">The reviewed quantities for <strong>{boq.source_name}</strong> are ready to move into material mapping.</p><div className="approval-summary"><div><span>Status</span><strong className="approved-label">APPROVED</strong></div><div><span>Approved lines</span><strong>{boq.items.length}</strong></div><div><span>Traceability</span><strong>Complete</strong></div></div><div className="action-row"><button className="secondary-button" type="button" onClick={onBack}>View approved BOQ</button><button className="primary-button" type="button" onClick={onGenerateBOM} disabled={loading}>{loading ? "Mapping materials..." : "Generate BOM →"}</button></div></div>;
 }
 
-function BOMScreen({ boq, bom, loading, onBack, onReviewBOQ, onMapItem, onError }: { boq: BOQ; bom: BOMResult; loading: boolean; onBack: () => void; onReviewBOQ: () => void; onMapItem: (itemNumber: number, workKey: string) => void; onError: (error: string) => void }) {
+function BOMScreen({ boq, bom, loading, onBack, onReviewBOQ, onMapItem, onError, onGenerateResources }: { boq: BOQ; bom: BOMResult; loading: boolean; onBack: () => void; onReviewBOQ: () => void; onMapItem: (itemNumber: number, workKey: string) => void; onError: (error: string) => void; onGenerateResources: () => void }) {
   const formatINR = (amount: number) => `₹${amount.toLocaleString("en-IN")}`;
   const [recipeOptions, setRecipeOptions] = useState<Record<number, MappingRecipe[]>>({});
 
@@ -487,7 +529,36 @@ function BOMScreen({ boq, bom, loading, onBack, onReviewBOQ, onMapItem, onError 
         {bom.lines.map((line) => <tr key={line.Material}><td>{line.Material}</td><td>{line.Category}</td><td>{line["Net qty"]}</td><td>{line["Wastage %"]}%</td><td>{line["Order qty"]}</td><td>{line.Unit}</td><td>{formatINR(line["Rate (Rs)"])}</td><td>{formatINR(line["Cost (Rs)"])}</td><td>{line["Used in BOQ items"]}</td></tr>)}
       </tbody></table></div> : <div className="issues"><strong>No materials were mapped.</strong><span>Check the BOQ mapping warnings and add a matching recipe to the project catalog.</span></div>}
       {bom.by_category.length > 0 && <><h3>Estimated cost by category</h3><div className="table-wrap"><table><thead><tr><th>Category</th><th>Estimated cost</th></tr></thead><tbody>{bom.by_category.map((category) => <tr key={category.Category}><td>{category.Category}</td><td>{formatINR(category["Cost (Rs)"])}</td></tr>)}</tbody></table></div></>}
-      <div className="action-row"><span className="muted">Material rates are prototype catalog estimates, not confirmed company rates.</span><div><button className="secondary-button" type="button" onClick={onBack}>Back to approved BOQ</button> {bom.validation.errors.length > 0 && <button className="secondary-button" type="button" onClick={onReviewBOQ}>Edit BOQ details</button>}</div></div>
+      <div className="action-row"><span className="muted">Material rates are prototype catalog estimates, not confirmed company rates.</span><div><button className="secondary-button" type="button" onClick={onBack}>Back to approved BOQ</button> {bom.validation.errors.length > 0 ? <button className="secondary-button" type="button" onClick={onReviewBOQ}>Edit BOQ details</button> : <button className="primary-button" type="button" onClick={onGenerateResources} disabled={loading}>{loading ? "Estimating resources..." : "Labour & Equipment →"}</button>}</div></div>
+    </div>
+  );
+}
+
+function ResourcesScreen({ boq, resources, onBack }: { boq: BOQ; resources: ResourcePlan; onBack: () => void }) {
+  const formatINR = (amount: number) => `₹${amount.toLocaleString("en-IN")}`;
+  const renderResources = (title: string, rows: ResourceLine[]) => (
+    <>
+      <h3>{title}</h3>
+      {rows.length > 0 ? <div className="table-wrap"><table><thead><tr><th>BOQ item</th><th>Work item</th><th>Resource</th><th>Hours</th><th>Hours / BOQ unit</th><th>Sample rate / hour</th><th>Sample cost</th></tr></thead><tbody>
+        {rows.map((line, index) => <tr key={`${line["BOQ item"]}-${line.Resource}-${index}`}><td>{line["BOQ item"]}</td><td>{line["Work item"]}</td><td>{line.Resource}</td><td>{line.Hours}</td><td>{line["Hours per BOQ unit"]}</td><td>{formatINR(line["Rate (Rs/hour)"])}</td><td>{formatINR(line["Estimated cost (Rs)"])}</td></tr>)}
+      </tbody></table></div> : <div className="issues"><span>No {title.toLowerCase()} assumptions matched this BOQ.</span></div>}
+    </>
+  );
+
+  return (
+    <div className="screen">
+      <div className="issues"><strong>Illustrative prototype estimate — not company data</strong><span className="warning">{resources.assumption_notice}</span></div>
+      <div className="data-strip"><div><span>BOQ source</span><strong>{boq.source_name}</strong></div><div><span>Labour estimate</span><strong>{formatINR(resources.labour_cost)}</strong></div><div><span>Equipment estimate</span><strong>{formatINR(resources.equipment_cost)}</strong></div></div>
+      <div className="section-intro compact"><span className="section-index">06</span><div><h2>Labour and equipment</h2><p>Review the sample productivity assumptions and hourly rates. Replace them with verified project data before operational use.</p></div></div>
+      {resources.warnings.length > 0 && <div className="issues"><strong>Resource estimate warnings</strong>{resources.warnings.map((warning) => <span className="warning" key={warning}>{warning}</span>)}</div>}
+      <h3>BOQ work-item mapping</h3>
+      <div className="table-wrap"><table><thead><tr><th>BOQ item</th><th>Description</th><th>Matched work item</th><th>Confidence</th><th>Status</th></tr></thead><tbody>
+        {resources.mappings.map((item) => <tr key={item["BOQ item"]}><td>{item["BOQ item"]}</td><td>{item.Description}</td><td>{item["Matched work item"]}</td><td>{Math.round(item.Confidence * 100)}%</td><td>{item.Status}</td></tr>)}
+      </tbody></table></div>
+      {renderResources("Labour requirements", resources.labour)}
+      {renderResources("Equipment requirements", resources.equipment)}
+      <div className="data-strip"><div><span>Total labour estimate</span><strong>{formatINR(resources.labour_cost)}</strong></div><div><span>Total equipment estimate</span><strong>{formatINR(resources.equipment_cost)}</strong></div><div><span>Combined sample estimate</span><strong>{formatINR(resources.total_cost)}</strong></div></div>
+      <div className="action-row"><span className="muted">Assumptions: data/labour_equipment_assumptions.csv.</span><button className="secondary-button" type="button" onClick={onBack}>Back to BOM</button></div>
     </div>
   );
 }

@@ -252,6 +252,56 @@ def test_manual_mapping_rejects_recipe_with_wrong_unit(review_session) -> None:
     assert "not available for BOQ unit 'pcs'" in response.json()["detail"]
 
 
+def test_labour_equipment_requires_validated_bom_and_returns_estimates(review_session) -> None:
+    client, extraction_id = review_session
+    approve_element(
+        client,
+        extraction_id,
+        {
+            "element_type": "wall",
+            "description": "External masonry wall",
+            "quantity": 10,
+            "unit": "m2",
+        },
+    )
+    boq_response = client.post(f"/extractions/{extraction_id}/boq")
+    boq_id = boq_response.json()["boq_id"]
+
+    assert client.post(f"/boqs/{boq_id}/resources").status_code == 409
+    client.post(f"/boqs/{boq_id}/submit")
+    client.post(f"/boqs/{boq_id}/approve")
+    mapped = client.put(
+        f"/boqs/{boq_id}/mapping",
+        json={"item_number": 1, "work_key": "masonry"},
+    )
+    assert mapped.status_code == 200
+
+    response = client.post(f"/boqs/{boq_id}/resources")
+
+    assert response.status_code == 200
+    plan = response.json()
+    assert "Illustrative prototype assumptions only" in plan["assumption_notice"]
+    assert plan["mappings"][0]["Status"] == "MANUAL"
+    assert plan["labour"]
+    assert plan["equipment"]
+    assert plan["labour_cost"] > 0
+    assert plan["equipment_cost"] > 0
+
+
+def test_labour_equipment_is_blocked_when_bom_mapping_has_errors(review_session) -> None:
+    client, extraction_id = review_session
+    approve_element(client, extraction_id)
+    boq_response = client.post(f"/extractions/{extraction_id}/boq")
+    boq_id = boq_response.json()["boq_id"]
+    client.post(f"/boqs/{boq_id}/submit")
+    client.post(f"/boqs/{boq_id}/approve")
+
+    response = client.post(f"/boqs/{boq_id}/resources")
+
+    assert response.status_code == 422
+    assert "Resolve BOM mapping errors" in response.json()["detail"]
+
+
 def test_sample_room_flooring_description_maps_with_assumption_notice(review_session) -> None:
     client, extraction_id = review_session
     approve_element(

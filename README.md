@@ -60,6 +60,8 @@ Generate a BOQ with `POST /extractions/{extraction_id}/boq`. BOQ edits use `PATC
 
 After BOQ approval, the frontend can generate a materials BOM. Unmatched BOQ lines block downstream estimates. On the BOM screen, reviewers can explicitly select a recipe with the same BOQ unit; manual selections are identified in the mapping results and require human confirmation. The application does not infer construction material from location-only descriptions. `data/recipes.csv` includes clearly labelled sample assumptions for the provided residential plan: vitrified room flooring, external masonry thickness, and internal partition thickness. These are demo assumptions, not drawing specifications; the 3 m wall height must be entered and verified by the reviewer.
 
+On the `feature/labour-equipment` branch, an approved BOQ with no blocking BOM mapping errors can also generate separate labour and equipment estimates. Productivity and hourly rates are illustrative prototype assumptions from `data/labour_equipment_assumptions.csv`, not company rates or validated project estimates.
+
 ## Frontend
 
 ```powershell
@@ -80,7 +82,7 @@ pytest
 - `app/frontend`: React/Vite frontend entry point for the milestone workflow.
 - `src/constructai/extraction`: extraction contracts, text providers, and reusable vision pipeline.
 - `src/constructai/boq`: validated BOQ data contracts and quantity logic.
-- `src/constructai/agents`: BOQ-to-material mapping.
+- `src/constructai/agents`: BOQ-to-material mapping and labour/equipment planning.
 - `tests`: focused backend and vision tests.
 
 ## Human-in-the-loop workflow
@@ -92,6 +94,7 @@ The project is intentionally designed so that a human reviews outputs after each
 - validation review
 - BOQ review
 - material mapping review
+- labour and equipment estimate review
 - final approval
 
 This prevents uncertain detections or missing values from silently propagating into the downstream estimate.
