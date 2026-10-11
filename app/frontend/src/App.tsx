@@ -91,6 +91,9 @@ type MappingRecipe = {
 
 type ResourceLine = {
   "BOQ item": string;
+  "BOQ quantity": number;
+  "BOQ unit": string;
+  "Work key": string;
   "Work item": string;
   Resource: string;
   Hours: number;
@@ -539,8 +542,8 @@ function ResourcesScreen({ boq, resources, onBack }: { boq: BOQ; resources: Reso
   const renderResources = (title: string, rows: ResourceLine[]) => (
     <>
       <h3>{title}</h3>
-      {rows.length > 0 ? <div className="table-wrap"><table><thead><tr><th>BOQ item</th><th>Work item</th><th>Resource</th><th>Hours</th><th>Hours / BOQ unit</th><th>Sample rate / hour</th><th>Sample cost</th></tr></thead><tbody>
-        {rows.map((line, index) => <tr key={`${line["BOQ item"]}-${line.Resource}-${index}`}><td>{line["BOQ item"]}</td><td>{line["Work item"]}</td><td>{line.Resource}</td><td>{line.Hours}</td><td>{line["Hours per BOQ unit"]}</td><td>{formatINR(line["Rate (Rs/hour)"])}</td><td>{formatINR(line["Estimated cost (Rs)"])}</td></tr>)}
+      {rows.length > 0 ? <div className="table-wrap"><table><thead><tr><th>BOQ item</th><th>BOQ quantity</th><th>Unit</th><th>Work item</th><th>Resource</th><th>Hours</th><th>Hours / BOQ unit</th><th>Sample rate / hour</th><th>Sample cost</th></tr></thead><tbody>
+        {rows.map((line, index) => <tr key={`${line["BOQ item"]}-${line.Resource}-${index}`}><td>{line["BOQ item"]}</td><td>{line["BOQ quantity"]}</td><td>{line["BOQ unit"]}</td><td>{line["Work item"]}</td><td>{line.Resource}</td><td>{line.Hours}</td><td>{line["Hours per BOQ unit"]}</td><td>{formatINR(line["Rate (Rs/hour)"])}</td><td>{formatINR(line["Estimated cost (Rs)"])}</td></tr>)}
       </tbody></table></div> : <div className="issues"><span>No {title.toLowerCase()} assumptions matched this BOQ.</span></div>}
     </>
   );

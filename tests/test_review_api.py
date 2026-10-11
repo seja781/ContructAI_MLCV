@@ -284,6 +284,8 @@ def test_labour_equipment_requires_validated_bom_and_returns_estimates(review_se
     assert plan["mappings"][0]["Status"] == "MANUAL"
     assert plan["labour"]
     assert plan["equipment"]
+    assert all(line["BOQ quantity"] == 10 for line in plan["labour"] + plan["equipment"])
+    assert all(line["BOQ unit"] == "m2" for line in plan["labour"] + plan["equipment"])
     assert plan["labour_cost"] > 0
     assert plan["equipment_cost"] > 0
 
@@ -330,6 +332,14 @@ def test_sample_room_flooring_description_maps_with_assumption_notice(review_ses
         "Tile adhesive (cement based)",
         "Tile grout",
     }
+
+    resources = client.post(f"/boqs/{boq_id}/resources")
+
+    assert resources.status_code == 200
+    plan = resources.json()
+    assert plan["labour"]
+    assert plan["equipment"]
+    assert all(line["Work key"] == "sample_room_floor" for line in plan["labour"] + plan["equipment"])
 
 
 def test_sample_external_wall_description_maps_with_visible_thickness_assumption(review_session) -> None:

@@ -12,12 +12,21 @@ steel,equipment,Bar cutter,0.01,250,Illustrative prototype allowance
 masonry,labour,Mason,0.8,120,Illustrative prototype allowance
 masonry,labour,Construction helper,0.8,80,Illustrative prototype allowance
 masonry,equipment,Mortar mixer,0.05,300,Illustrative prototype allowance
+sample_external_masonry,labour,Mason,0.8,120,Illustrative sample external masonry allowance
+sample_external_masonry,labour,Construction helper,0.8,80,Illustrative sample external masonry allowance
+sample_external_masonry,equipment,Mortar mixer,0.05,300,Illustrative sample external masonry allowance
+sample_internal_masonry,labour,Mason,0.8,120,Illustrative sample internal masonry allowance
+sample_internal_masonry,labour,Construction helper,0.8,80,Illustrative sample internal masonry allowance
+sample_internal_masonry,equipment,Mortar mixer,0.05,300,Illustrative sample internal masonry allowance
 lintel,labour,Mason,1.2,120,Illustrative prototype allowance
 lintel,labour,Construction helper,0.8,80,Illustrative prototype allowance
 lintel,equipment,Concrete mixer,0.08,300,Illustrative prototype allowance
 floor_vit,labour,Tile mason,0.75,130,Illustrative prototype allowance
 floor_vit,labour,Construction helper,0.4,80,Illustrative prototype allowance
 floor_vit,equipment,Tile cutter,0.08,180,Illustrative prototype allowance
+sample_room_floor,labour,Tile mason,0.75,130,Illustrative sample room flooring allowance
+sample_room_floor,labour,Construction helper,0.4,80,Illustrative sample room flooring allowance
+sample_room_floor,equipment,Tile cutter,0.08,180,Illustrative sample room flooring allowance
 floor_skid,labour,Tile mason,0.8,130,Illustrative prototype allowance
 floor_skid,labour,Construction helper,0.45,80,Illustrative prototype allowance
 floor_skid,equipment,Tile cutter,0.08,180,Illustrative prototype allowance
