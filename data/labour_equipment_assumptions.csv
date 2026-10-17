@@ -3,6 +3,10 @@ slab,labour,Concrete worker,2.5,120,Illustrative prototype allowance
 slab,labour,Construction helper,2,80,Illustrative prototype allowance
 slab,equipment,Concrete mixer,0.5,300,Illustrative prototype allowance
 slab,equipment,Needle vibrator,0.15,150,Illustrative prototype allowance
+slab_area,labour,Concrete worker,0.375,120,Illustrative prototype allowance per m2 at nominal 150 mm slab thickness
+slab_area,labour,Construction helper,0.3,80,Illustrative prototype allowance per m2 at nominal 150 mm slab thickness
+slab_area,equipment,Concrete mixer,0.075,300,Illustrative prototype allowance per m2 at nominal 150 mm slab thickness
+slab_area,equipment,Needle vibrator,0.023,150,Illustrative prototype allowance per m2 at nominal 150 mm slab thickness
 formwork,labour,Carpenter,0.4,120,Illustrative prototype allowance
 formwork,labour,Construction helper,0.3,80,Illustrative prototype allowance
 formwork,equipment,Power drill,0.03,100,Illustrative prototype allowance

@@ -8,7 +8,7 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import Any
 
-from constructai.agents.mapping_agent import MappingAgent, OK_SCORE, REVIEW_SCORE
+from constructai.agents.mapping_agent import MappingAgent
 from constructai.boq.schemas import BOQ
 
 
@@ -129,9 +129,9 @@ class ResourcePlanner:
 
             status = "MANUAL" if manually_mapped else (
                 "OK"
-                if score >= OK_SCORE
+                if score >= self.mapping_agent.rules.ok_score
                 else "REVIEW"
-                if score >= REVIEW_SCORE
+                if score >= self.mapping_agent.rules.review_score
                 else "NO MATCH"
             )
             work_description = (

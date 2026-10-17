@@ -267,7 +267,7 @@ def test_labour_equipment_requires_validated_bom_and_returns_estimates(review_se
         extraction_id,
         {
             "element_type": "wall",
-            "description": "External masonry wall",
+            "description": "External masonry wall 230 mm thick",
             "quantity": 10,
             "unit": "m2",
         },
