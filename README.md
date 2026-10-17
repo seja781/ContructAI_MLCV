@@ -71,7 +71,7 @@ Edit those files to change behaviour — no code changes are needed.
 An approved BOQ with no blocking BOM mapping errors can generate separate labour and equipment estimates through
 `POST /boqs/{boq_id}/resources`. Productivity assumptions and hourly rates come from
 `data/labour_equipment_assumptions.csv`; these are illustrative prototype values, not company rates or validated
-project estimates.
+project estimates. The CSV is checked at backend startup for known work keys and finite, non-negative values.
 
 ## Step 07 — BOM approval and procurement (human-in-the-loop)
 
