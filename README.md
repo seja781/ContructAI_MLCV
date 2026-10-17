@@ -66,15 +66,23 @@ All BOM engineering rules (thickness ranges, opening deductions, volume allowanc
 matching thresholds, countable units) live in `data/` and are documented in `data/BOM_RULES.md`.
 Edit those files to change behaviour — no code changes are needed.
 
-## Step 06 — BOM approval and procurement (human-in-the-loop)
+## Step 06 — Labour and equipment estimates
 
-After the BOM is generated (step 05) and has no blocking issues:
+An approved BOQ with no blocking BOM mapping errors can generate separate labour and equipment estimates through
+`POST /boqs/{boq_id}/resources`. Productivity assumptions and hourly rates come from
+`data/labour_equipment_assumptions.csv`; these are illustrative prototype values, not company rates or validated
+project estimates.
+
+## Step 07 — BOM approval and procurement (human-in-the-loop)
+
+After the BOM is generated (step 05) and has no blocking issues, generate and review the illustrative labour and
+equipment plan (step 06). Return to the BOM screen to continue:
 
 1. On the BOM screen, fill **Approve BOM for procurement**: approver name (required), procurement project name/code,
    optional comment. If the BOM has warnings (e.g. missing plaster/steel scope), tick the acknowledgement box.
 2. The server regenerates the BOM from the approved BOQ and hands it to procurement: a read-only BOM snapshot
    (with approver and comment) and an editable procurement list are created. Procurement quantity = `Order qty`.
-3. Step **06 Procurement** opens inside the app: vendors, quotation comparison, purchase orders (one per vendor),
+3. Step **07 Procurement** opens inside the app: vendors, quotation comparison, purchase orders (one per vendor),
    material packages / contractor assignment, contract drafts from editable templates, and PDF export.
    Every PO, package and contract has its own Draft → Pending review → Approved → Finalized workflow; approved
    documents change only through revisions. Nothing is signed or sent automatically.
@@ -83,7 +91,7 @@ Reopening the BOQ or changing a recipe mapping cancels the BOM approval; approve
 (earlier procurement data is kept).
 
 API: `POST /boqs/{boq_id}/bom/approve`, `GET /boqs/{boq_id}/bom/approval`, procurement under `/procurement/api/...`,
-procurement UI at `/procurement/ui/` (opened inside step 06; also usable in its own tab).
+procurement UI at `/procurement/ui/` (opened inside step 07; also usable in its own tab).
 
 Procurement data is stored in SQLite at `var/procurement.db` (created automatically). Set `PROC_DB_URL` to use
 another database. Delete the file to reset procurement data.
@@ -108,8 +116,8 @@ pytest
 - `app/frontend`: React/Vite frontend entry point for the milestone workflow.
 - `src/constructai/extraction`: extraction contracts, text providers, and reusable vision pipeline.
 - `src/constructai/boq`: validated BOQ data contracts and quantity logic.
-- `src/constructai/agents`: BOQ-to-material mapping (rules in `data/`, see `data/BOM_RULES.md`).
-- `src/constructai/procurement`: step 06 procurement, vendor management, POs, packages, contracts (API + UI).
+- `src/constructai/agents`: BOQ-to-material mapping (rules in `data/`, see `data/BOM_RULES.md`) and labour/equipment planning.
+- `src/constructai/procurement`: step 07 procurement, vendor management, POs, packages, contracts (API + UI).
 - `tests`: focused backend and vision tests.
 
 ## Human-in-the-loop workflow
@@ -123,5 +131,7 @@ The project is intentionally designed so that a human reviews outputs after each
 - material mapping review
 - BOM approval for procurement
 - purchase order / package / contract review and approval
+- labour and equipment estimate review
+- final approval
 
 This prevents uncertain detections or missing values from silently propagating into the downstream estimate.

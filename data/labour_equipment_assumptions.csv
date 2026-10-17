@@ -1,0 +1,64 @@
+work_key,resource_type,resource,hours_per_unit,rate_inr_per_hour,assumption
+slab,labour,Concrete worker,2.5,120,Illustrative prototype allowance
+slab,labour,Construction helper,2,80,Illustrative prototype allowance
+slab,equipment,Concrete mixer,0.5,300,Illustrative prototype allowance
+slab,equipment,Needle vibrator,0.15,150,Illustrative prototype allowance
+formwork,labour,Carpenter,0.4,120,Illustrative prototype allowance
+formwork,labour,Construction helper,0.3,80,Illustrative prototype allowance
+formwork,equipment,Power drill,0.03,100,Illustrative prototype allowance
+steel,labour,Steel fixer,0.04,120,Illustrative prototype allowance
+steel,labour,Construction helper,0.02,80,Illustrative prototype allowance
+steel,equipment,Bar cutter,0.01,250,Illustrative prototype allowance
+masonry,labour,Mason,0.8,120,Illustrative prototype allowance
+masonry,labour,Construction helper,0.8,80,Illustrative prototype allowance
+masonry,equipment,Mortar mixer,0.05,300,Illustrative prototype allowance
+lintel,labour,Mason,1.2,120,Illustrative prototype allowance
+lintel,labour,Construction helper,0.8,80,Illustrative prototype allowance
+lintel,equipment,Concrete mixer,0.08,300,Illustrative prototype allowance
+floor_vit,labour,Tile mason,0.75,130,Illustrative prototype allowance
+floor_vit,labour,Construction helper,0.4,80,Illustrative prototype allowance
+floor_vit,equipment,Tile cutter,0.08,180,Illustrative prototype allowance
+floor_skid,labour,Tile mason,0.8,130,Illustrative prototype allowance
+floor_skid,labour,Construction helper,0.45,80,Illustrative prototype allowance
+floor_skid,equipment,Tile cutter,0.08,180,Illustrative prototype allowance
+bed,labour,Mason,0.35,120,Illustrative prototype allowance
+bed,labour,Construction helper,0.25,80,Illustrative prototype allowance
+bed,equipment,Mortar mixer,0.03,300,Illustrative prototype allowance
+skirting,labour,Tile mason,0.3,130,Illustrative prototype allowance
+skirting,labour,Construction helper,0.15,80,Illustrative prototype allowance
+skirting,equipment,Tile cutter,0.03,180,Illustrative prototype allowance
+plaster_ext,labour,Plasterer,0.35,120,Illustrative prototype allowance
+plaster_ext,labour,Construction helper,0.3,80,Illustrative prototype allowance
+plaster_ext,equipment,Mortar mixer,0.03,300,Illustrative prototype allowance
+paint_ext,labour,Painter,0.2,110,Illustrative prototype allowance
+paint_ext,labour,Construction helper,0.08,80,Illustrative prototype allowance
+paint_ext,equipment,Scaffold access setup,0.1,100,Illustrative prototype allowance
+plaster_int,labour,Plasterer,0.3,120,Illustrative prototype allowance
+plaster_int,labour,Construction helper,0.25,80,Illustrative prototype allowance
+plaster_int,equipment,Mortar mixer,0.025,300,Illustrative prototype allowance
+paint_int,labour,Painter,0.18,110,Illustrative prototype allowance
+paint_int,labour,Construction helper,0.07,80,Illustrative prototype allowance
+paint_int,equipment,Paint spray or roller setup,0.05,100,Illustrative prototype allowance
+plaster_ceil,labour,Plasterer,0.4,120,Illustrative prototype allowance
+plaster_ceil,labour,Construction helper,0.35,80,Illustrative prototype allowance
+plaster_ceil,equipment,Work platform setup,0.08,100,Illustrative prototype allowance
+paint_ceil,labour,Painter,0.22,110,Illustrative prototype allowance
+paint_ceil,labour,Construction helper,0.08,80,Illustrative prototype allowance
+paint_ceil,equipment,Work platform setup,0.06,100,Illustrative prototype allowance
+tiles_wall,labour,Tile mason,0.85,130,Illustrative prototype allowance
+tiles_wall,labour,Construction helper,0.45,80,Illustrative prototype allowance
+tiles_wall,equipment,Tile cutter,0.1,180,Illustrative prototype allowance
+door_int,labour,Carpenter,1.2,120,Illustrative prototype allowance
+door_int,labour,Construction helper,0.4,80,Illustrative prototype allowance
+door_int,equipment,Power drill,0.12,100,Illustrative prototype allowance
+door_ext,labour,Carpenter,1.5,120,Illustrative prototype allowance
+door_ext,labour,Construction helper,0.5,80,Illustrative prototype allowance
+door_ext,equipment,Power drill,0.15,100,Illustrative prototype allowance
+door_area,labour,Carpenter,0.8,120,Illustrative prototype allowance
+door_area,labour,Construction helper,0.3,80,Illustrative prototype allowance
+window_nos,labour,Window installer,1,140,Illustrative prototype allowance
+window_nos,labour,Construction helper,0.4,80,Illustrative prototype allowance
+window_nos,equipment,Power drill,0.1,100,Illustrative prototype allowance
+window_area,labour,Window installer,0.6,140,Illustrative prototype allowance
+window_area,labour,Construction helper,0.3,80,Illustrative prototype allowance
+window_area,equipment,Power drill,0.08,100,Illustrative prototype allowance
