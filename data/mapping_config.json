@@ -1,0 +1,33 @@
+{
+  "_doc": "Matching and parsing settings for the BOQ -> BOM mapping agent. Edit values here, not in code.",
+  "ok_score": 0.75,
+  "review_score": 0.35,
+  "stopwords": [
+    "of",
+    "to",
+    "under",
+    "for",
+    "up",
+    "the",
+    "and",
+    "over",
+    "with",
+    "at",
+    "in",
+    "on"
+  ],
+  "thickness_keywords": [
+    "thick",
+    "thk",
+    "thickness"
+  ],
+  "thickness_keyword_window": 12,
+  "trusted_dimension_sources": [
+    "human",
+    "ocr",
+    "text_layer"
+  ],
+  "width_as_thickness_element_types": [
+    "wall"
+  ]
+}

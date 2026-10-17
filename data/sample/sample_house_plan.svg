@@ -1,0 +1,100 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="900" viewBox="0 0 1200 900">
+  <!-- Test floor plan for ConstructAI: single-storey 1BHK, 9.0 m x 7.0 m. Scale: 1 m = 80 px. Dimensions are illustrative. -->
+  <rect width="1200" height="900" fill="#f8faf7"/>
+  <text x="600" y="44" text-anchor="middle" font-family="Arial, sans-serif" font-size="26" font-weight="700" fill="#17221f">TEST FLOOR PLAN — SINGLE STOREY 1BHK (9.0 m x 7.0 m)</text>
+  <text x="600" y="72" text-anchor="middle" font-family="Arial, sans-serif" font-size="14" fill="#5d6b62">For testing ConstructAI upload → extraction → BOQ → BOM → procurement. Illustrative dimensions, not for construction.</text>
+
+  <g transform="translate(240,130)">
+    <!-- external walls 230 mm (18 px) -->
+    <g fill="#c9b49a" stroke="#17221f" stroke-width="2">
+      <rect x="0" y="0" width="720" height="18"/>            <!-- W-01 north -->
+      <rect x="0" y="542" width="720" height="18"/>          <!-- W-02 south -->
+      <rect x="702" y="0" width="18" height="560"/>          <!-- W-03 east -->
+      <rect x="0" y="0" width="18" height="560"/>            <!-- W-04 west -->
+    </g>
+    <!-- internal walls 115 mm (9 px) -->
+    <g fill="#d9c8b1" stroke="#17221f" stroke-width="1.5">
+      <rect x="400" y="18" width="9" height="524"/>          <!-- W-05 bedroom / living -->
+      <rect x="409" y="360" width="293" height="9"/>         <!-- W-06 bedroom / toilet -->
+    </g>
+    <!-- openings: windows (blue), doors (gap + swing) -->
+    <g fill="#ffffff" stroke="#2f6fb3" stroke-width="2">
+      <rect x="140" y="0" width="120" height="18"/>          <!-- WN-01 living window 1.5 m -->
+      <rect x="702" y="120" width="18" height="120"/>        <!-- WN-02 bedroom window 1.5 m -->
+      <rect x="0" y="430" width="18" height="48"/>           <!-- WN-03 ventilator 0.6 m (west, kitchen) -->
+    </g>
+    <g fill="#f8faf7" stroke="none">
+      <rect x="160" y="542" width="80" height="18"/>         <!-- D-01 main door 1.0 m -->
+      <rect x="400" y="230" width="9" height="72"/>          <!-- D-02 bedroom door 0.9 m -->
+      <rect x="560" y="360" width="72" height="9"/>          <!-- D-03 toilet door 0.9 m -->
+    </g>
+    <g fill="none" stroke="#d26a3e" stroke-width="2">
+      <path d="M160 542 A80 80 0 0 1 240 462"/><line x1="160" y1="542" x2="160" y2="462"/>
+      <path d="M400 230 A72 72 0 0 1 328 302"/><line x1="400" y1="230" x2="328" y2="230"/>
+      <path d="M560 369 A72 72 0 0 0 632 441"/><line x1="560" y1="369" x2="560" y2="441"/>
+    </g>
+    <!-- room labels -->
+    <g font-family="Arial, sans-serif" fill="#17221f" text-anchor="middle">
+      <text x="200" y="250" font-size="22" font-weight="700">LIVING + KITCHEN</text>
+      <text x="200" y="276" font-size="14">4.8 m x 6.5 m · vitrified tiles</text>
+      <text x="555" y="190" font-size="22" font-weight="700">BEDROOM</text>
+      <text x="555" y="216" font-size="14">3.7 m x 4.2 m · vitrified tiles</text>
+      <text x="555" y="455" font-size="20" font-weight="700">TOILET</text>
+      <text x="555" y="478" font-size="13">3.7 m x 2.1 m · anti-skid floor, wall tiles</text>
+    </g>
+    <!-- tags -->
+    <g font-family="Arial, sans-serif" font-size="12" fill="#2f6fb3">
+      <text x="200" y="-8" text-anchor="middle">WN-01 1.5 x 1.2</text>
+      <text x="735" y="185">WN-02 1.5 x 1.2</text>
+      <text x="-12" y="458" text-anchor="end">WN-03 0.6 x 0.45</text>
+    </g>
+    <g font-family="Arial, sans-serif" font-size="12" fill="#d26a3e">
+      <text x="200" y="584" text-anchor="middle">D-01 1.0 x 2.1 (main)</text>
+      <text x="300" y="320" text-anchor="middle">D-02 0.9 x 2.1</text>
+      <text x="420" y="392">D-03 0.9 x 2.1</text>
+    </g>
+    <!-- overall dimensions -->
+    <g stroke="#526159" stroke-width="1.5" fill="none">
+      <line x1="0" y1="620" x2="720" y2="620"/><line x1="0" y1="610" x2="0" y2="630"/><line x1="720" y1="610" x2="720" y2="630"/>
+      <line x1="-70" y1="0" x2="-70" y2="560"/><line x1="-80" y1="0" x2="-60" y2="0"/><line x1="-80" y1="560" x2="-60" y2="560"/>
+    </g>
+    <text x="360" y="645" text-anchor="middle" font-family="Arial, sans-serif" font-size="18" fill="#17221f">9.0 m (external)</text>
+    <text x="-90" y="280" text-anchor="middle" transform="rotate(-90 -90 280)" font-family="Arial, sans-serif" font-size="18" fill="#17221f">7.0 m (external)</text>
+  </g>
+
+  <g font-family="Arial, sans-serif" font-size="13" fill="#315b3d">
+    <rect x="40" y="800" width="1120" height="82" rx="6" fill="#e5f0e7"/>
+    <text x="60" y="824">Walls: external brick masonry 230 mm thick, internal 115 mm thick, floor-to-slab height 3.0 m. Slab: RCC 125 mm thick. Lintels over all openings.</text>
+    <text x="60" y="846">Finishes: internal plaster 12 mm, external plaster 20 mm, ceiling plaster 6 mm, emulsion inside, weatherproof paint outside, 100 mm tile skirting.</text>
+    <text x="60" y="868">Reinforcement quantity shown is a placeholder for testing — take actual steel from the bar bending schedule.</text>
+  </g>
+
+  <!--
+  ELEMENT|element_type=wall|element_id=W-01|description=Brick masonry 230 mm thick external wall north|location=North|dimensions=length:9.0,width:0.23,height:3.0|unit=m2|confidence=0.95
+  ELEMENT|element_type=wall|element_id=W-02|description=Brick masonry 230 mm thick external wall south|location=South|dimensions=length:9.0,width:0.23,height:3.0|unit=m2|confidence=0.95
+  ELEMENT|element_type=wall|element_id=W-03|description=Brick masonry 230 mm thick external wall east|location=East|dimensions=length:6.54,width:0.23,height:3.0|unit=m2|confidence=0.95
+  ELEMENT|element_type=wall|element_id=W-04|description=Brick masonry 230 mm thick external wall west|location=West|dimensions=length:6.54,width:0.23,height:3.0|unit=m2|confidence=0.95
+  ELEMENT|element_type=wall|element_id=W-05|description=Brick masonry 115 mm thick internal wall bedroom|location=Living / bedroom|dimensions=length:6.54,width:0.115,height:3.0|unit=m2|confidence=0.93
+  ELEMENT|element_type=wall|element_id=W-06|description=Brick masonry 115 mm thick internal wall toilet|location=Bedroom / toilet|dimensions=length:3.66,width:0.115,height:3.0|unit=m2|confidence=0.93
+  ELEMENT|element_type=door|element_id=D-01|host_element_id=W-02|description=Main entrance door external|location=South wall|dimensions=length:1.0,height:2.1|quantity=1|unit=nos|confidence=0.92
+  ELEMENT|element_type=door|element_id=D-02|host_element_id=W-05|description=Internal door bedroom|location=Bedroom|dimensions=length:0.9,height:2.1|quantity=1|unit=nos|confidence=0.92
+  ELEMENT|element_type=door|element_id=D-03|host_element_id=W-06|description=Internal door toilet|location=Toilet|dimensions=length:0.9,height:2.1|quantity=1|unit=nos|confidence=0.92
+  ELEMENT|element_type=window|element_id=WN-01|host_element_id=W-01|description=Window area glazing shutter aluminium sliding|location=Living|dimensions=length:1.5,height:1.2|unit=m2|confidence=0.92
+  ELEMENT|element_type=window|element_id=WN-02|host_element_id=W-03|description=Window area glazing shutter aluminium sliding|location=Bedroom|dimensions=length:1.5,height:1.2|unit=m2|confidence=0.92
+  ELEMENT|element_type=window|element_id=WN-03|host_element_id=W-04|description=Window area glazing shutter ventilator|location=Kitchen|dimensions=length:0.6,height:0.45|unit=m2|confidence=0.9
+  ELEMENT|element_type=lintel|element_id=L-01|description=RCC lintel over openings|location=All openings|quantity=8.2|unit=m|confidence=0.9
+  ELEMENT|element_type=slab|element_id=S-01|description=RCC slab concrete 125 mm thick roof|location=Roof|dimensions=length:9.0,width:7.0|unit=m2|confidence=0.94
+  ELEMENT|element_type=slab|element_id=S-02|description=Formwork shuttering slab soffit|location=Roof|quantity=56.7|unit=m2|confidence=0.9
+  ELEMENT|element_type=slab|element_id=S-03|description=Reinforcement steel slab placeholder as per BBS|location=Roof|quantity=630|unit=kg|confidence=0.6
+  ELEMENT|element_type=finish|element_id=F-01|description=Internal wall plaster 12 mm thick|location=All rooms|quantity=150|unit=m2|confidence=0.9
+  ELEMENT|element_type=finish|element_id=F-02|description=External wall plaster 20 mm thick|location=External faces|quantity=88|unit=m2|confidence=0.9
+  ELEMENT|element_type=finish|element_id=F-03|description=Ceiling plaster 6 mm thick|location=All rooms|quantity=56.7|unit=m2|confidence=0.9
+  ELEMENT|element_type=finish|element_id=F-04|description=Interior emulsion paint coats|location=All rooms|quantity=132|unit=m2|confidence=0.9
+  ELEMENT|element_type=finish|element_id=F-05|description=External weatherproof paint|location=External faces|quantity=88|unit=m2|confidence=0.9
+  ELEMENT|element_type=finish|element_id=F-06|description=Ceiling paint coats|location=All rooms|quantity=56.7|unit=m2|confidence=0.9
+  ELEMENT|element_type=finish|element_id=F-07|description=Glazed wall tiles bathrooms|location=Toilet|quantity=18|unit=m2|confidence=0.9
+  ELEMENT|element_type=floor|element_id=FL-01|description=Vitrified tile flooring dry areas|location=Living and bedroom|quantity=46.7|unit=m2|confidence=0.9
+  ELEMENT|element_type=floor|element_id=FL-02|description=Anti skid ceramic tile flooring wet areas|location=Toilet|quantity=7.8|unit=m2|confidence=0.9
+  ELEMENT|element_type=floor|element_id=FL-03|description=Tile skirting high 100 mm|location=Living and bedroom|quantity=38|unit=m|confidence=0.9
+  -->
+</svg>

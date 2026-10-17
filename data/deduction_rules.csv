@@ -1,0 +1,8 @@
+host_work_key,opening_element_types,min_opening_area_m2,max_opening_area_m2,deduct_fraction,note
+masonry,door|window|opening|ventilator,0.1,,1,Deduct openings larger than 0.1 m2 from masonry (verify against IS 1200 edition / contract measurement rules)
+sample_external_masonry,door|window|opening|ventilator,0.1,,1,Deduct openings larger than 0.1 m2 from masonry (verify against IS 1200 edition / contract measurement rules)
+sample_internal_masonry,door|window|opening|ventilator,0.1,,1,Deduct openings larger than 0.1 m2 from masonry (verify against IS 1200 edition / contract measurement rules)
+plaster_int,door|window|opening|ventilator,0.5,3,0.5,"Plaster: openings 0.5-3 m2 deducted on one face only (verify against measurement rules)"
+plaster_int,door|window|opening|ventilator,3,,1,Plaster: openings above 3 m2 deducted (verify against measurement rules)
+plaster_ext,door|window|opening|ventilator,0.5,3,0.5,"Plaster: openings 0.5-3 m2 deducted on one face only (verify against measurement rules)"
+plaster_ext,door|window|opening|ventilator,3,,1,Plaster: openings above 3 m2 deducted (verify against measurement rules)

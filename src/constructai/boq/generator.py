@@ -29,6 +29,7 @@ class BOQGenerator:
                     dimensions=element.dimensions,
                     dimensions_source=element.dimensions_source,
                     element_id=element.element_id,
+                    host_element_id=element.host_element_id,
                     item_code=element.element_id,
                     source_element_ids=[element.element_id] if element.element_id else [],
                 )

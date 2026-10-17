@@ -140,3 +140,23 @@ h3 { margin: 28px 0 12px; font-size: 15px; letter-spacing: -.02em; }
   .approval-summary div { border-right: 0; border-bottom: 1px solid #d7ddd5; }
   .approval-summary div:last-child { border-bottom: 0; }
 }
+
+/* step 06: BOM approval + procurement */
+.approval-panel { max-width: 1000px; margin-top: 28px; padding: 22px 24px; border: 1px solid #d7ddd5; background: #fff; }
+.approval-panel.approved { border-color: #9fc7a8; background: #f4faf5; }
+.approval-panel h3 { margin: 6px 0 8px; }
+.approval-form { display: grid; grid-template-columns: repeat(3, minmax(160px, 1fr)); gap: 14px 18px; margin-top: 16px; }
+.approval-form label { display: flex; flex-direction: column; gap: 6px; font-size: 11px; color: #5e6b62; }
+.approval-form label.wide { grid-column: 1 / -1; }
+.approval-form label.check { flex-direction: row; align-items: center; gap: 8px; color: #17221f; }
+.approval-form select, .approval-form input:not([type=checkbox]) { border: 1px solid #bac6bd; padding: 9px 10px; background: #fff; color: #17221f; }
+.approval-form input:focus { outline: 1px solid #d26a3e; }
+.procurement-frame { width: 100%; height: calc(100vh - 260px); min-height: 640px; border: 1px solid #d7ddd5; background: #fff; }
+a.secondary-button { display: inline-flex; align-items: center; text-decoration: none; }
+@media (max-width: 760px) { .approval-form { grid-template-columns: 1fr; } }
+
+.deductions-summary { max-width: 1000px; margin: 18px 0; padding: 12px 16px; border: 1px solid #d7ddd5; background: #fff; font-size: 13px; }
+.deductions-summary summary { cursor: pointer; }
+.deductions-summary .table-wrap { margin-top: 12px; }
+td small { display: block; margin-top: 2px; }
+.location-input { min-width: 230px; }

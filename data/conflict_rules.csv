@@ -1,0 +1,4 @@
+work_key_a,work_key_b,message
+floor_vit,bed,"Vitrified flooring recipe already includes tile adhesive, and a cement mortar bed is also present. Confirm the fixing method so fixing material is not counted twice."
+floor_skid,bed,"Anti-skid flooring recipe already includes tile adhesive, and a cement mortar bed is also present. Confirm the fixing method so fixing material is not counted twice."
+sample_room_floor,bed,"Flooring recipe already includes tile adhesive, and a cement mortar bed is also present. Confirm the fixing method so fixing material is not counted twice."

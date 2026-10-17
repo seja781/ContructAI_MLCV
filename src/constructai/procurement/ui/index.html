@@ -1,0 +1,32 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>ConstructAI Procurement Prototype</title>
+  <link rel="stylesheet" href="static/styles.css">
+</head>
+<body>
+<div class="app">
+  <aside class="sidebar" id="sidebar">
+    <div class="brand"><b>ConstructAI · Procurement</b><span>Step 06 · after BOM approval</span></div>
+    <nav class="nav" id="nav"></nav>
+  </aside>
+  <div class="main">
+    <header class="topbar">
+      <button class="btn menu-btn" id="menuBtn" aria-label="Menu">☰</button>
+      <label>Project <select id="projectSel"></select></label>
+      <label>Procurement list <select id="listSel"></select></label>
+      <div class="spacer"></div>
+      <label title="Recorded on every review action and in document history">Acting as
+        <input id="actorInput" placeholder="Your name (required for approvals)">
+      </label>
+    </header>
+    <main class="content" id="view"></main>
+  </div>
+</div>
+<div id="modalRoot"></div>
+<div class="toasts" id="toasts"></div>
+<script src="static/app.js"></script>
+</body>
+</html>

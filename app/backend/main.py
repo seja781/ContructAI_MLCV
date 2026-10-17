@@ -1,3 +1,6 @@
+import logging
+import math
+import os
 from pathlib import Path
 from tempfile import TemporaryDirectory
 from decimal import Decimal
@@ -24,18 +27,41 @@ from constructai.extraction.text_providers import (
     PyMuPDFTextProvider,
     SvgTextProvider,
 )
-from constructai.extraction.vision import OpenCVFloorPlanDetector, SUPPORTED_VISUAL_EXTENSIONS
+from constructai.documents.renderer import SUPPORTED_DRAWING_EXTENSIONS
+from constructai.extraction.local_provider import LocalExtractionProvider
+from constructai.extraction.ocr import OCRUnavailableError, tesseract_status
 from constructai.agents.mapping_agent import MappingAgent
+from constructai.procurement.app import create_procurement_app
+from constructai.procurement.handoff import handoff_approved_bom
 
+
+try:  # optional .env support (TESSERACT_CMD, log level, OCR settings)
+    from dotenv import load_dotenv
+
+    load_dotenv()
+except ImportError:
+    pass
+
+logging.basicConfig(
+    level=os.getenv("CONSTRUCTAI_LOG_LEVEL", "INFO").upper(),
+    format="%(asctime)s %(levelname)s %(name)s: %(message)s",
+)
+logger = logging.getLogger("constructai.api")
 
 app = FastAPI(
     title="ConstructAI_MLCV API",
     version="0.1.0",
 )
 
+# Step 06 — procurement & vendor contracts (API: /procurement/api/..., UI: /procurement/ui/)
+app.mount("/procurement", create_procurement_app())
+
+# Uploaded drawings go through the verified extraction pipeline: SVG/PDF text
+# or Tesseract OCR -> dimension parsing -> label association -> verified scale
+# calibration. Nothing is estimated or defaulted.
 extraction_agent = ExtractionAgent(
     [PyMuPDFTextProvider(), SvgTextProvider()],
-    vision_detector=OpenCVFloorPlanDetector(),
+    extraction_provider=LocalExtractionProvider(),
 )
 
 boq_generator = BOQGenerator()
@@ -47,10 +73,12 @@ extraction_revisions: dict[str, int] = {}
 boq_sessions: dict[str, BOQ] = {}
 boq_extraction_revisions: dict[str, int] = {}
 boq_recipe_overrides: dict[str, dict[int, str]] = {}
+bom_approvals: dict[str, dict] = {}  # boq_id -> human BOM approval + procurement handoff record
 
 
 class ExtractedElementEdit(BaseModel):
     element_type: str | None = None
+    host_element_id: str | None = None
     description: str | None = None
     location: str | None = None
     dimensions: Dimensions | None = None
@@ -62,6 +90,15 @@ class ExtractedElementEdit(BaseModel):
 
 class ElementReviewDecision(BaseModel):
     decision: Literal["approved", "rejected"]
+
+
+class BOMApproval(BaseModel):
+    approved_by: str = Field(min_length=1, max_length=100)
+    comment: str | None = None
+    acknowledge_warnings: bool = False
+    project_name: str | None = None
+    project_code: str | None = None
+    procurement_project_id: int | None = None  # add to an existing procurement project instead of a new one
 
 
 class BOQRecipeMapping(BaseModel):
@@ -76,16 +113,25 @@ def _get_extraction(extraction_id: str) -> ExtractionResult:
     return extraction
 
 
+def _approved_only(extraction: ExtractionResult) -> ExtractionResult:
+    """Rejected elements never enter the BOQ; only explicitly approved elements do."""
+    return extraction.model_copy(update={"elements": [
+        element for element in extraction.elements if element.review_status is ElementReviewStatus.APPROVED
+    ]})
+
+
 def _require_approved_extraction(extraction: ExtractionResult) -> None:
     if not extraction.elements:
         raise HTTPException(status_code=409, detail="An empty extraction cannot generate a BOQ")
-    if any(element.review_status is not ElementReviewStatus.APPROVED for element in extraction.elements):
+    if any(element.review_status is ElementReviewStatus.PENDING for element in extraction.elements):
         raise HTTPException(
             status_code=409,
-            detail="Every extracted element must be explicitly approved; rejected elements cannot enter the BOQ",
+            detail="Every extracted element must be explicitly approved or rejected; rejected elements do not enter the BOQ",
         )
+    if not any(element.review_status is ElementReviewStatus.APPROVED for element in extraction.elements):
+        raise HTTPException(status_code=409, detail="Approve at least one element to generate a BOQ")
     errors = [
-        issue for issue in boq_validator.validate_extraction(extraction)
+        issue for issue in boq_validator.validate_extraction(_approved_only(extraction))
         if issue.severity is ValidationSeverity.ERROR
     ]
     if errors:
@@ -109,7 +155,7 @@ def _require_current_boq(boq: BOQ) -> ExtractionResult:
 def _create_boq(extraction: ExtractionResult) -> BOQ:
     _require_approved_extraction(extraction)
     try:
-        boq = boq_generator.generate(extraction)
+        boq = boq_generator.generate(_approved_only(extraction))
     except ValueError as error:
         raise HTTPException(status_code=422, detail=str(error)) from error
     boq_id = str(uuid4())
@@ -120,8 +166,26 @@ def _create_boq(extraction: ExtractionResult) -> BOQ:
     return boq
 
 
+def _json_safe(value):
+    """Replace NaN/infinity (invalid JSON) with null instead of crashing."""
+
+    if isinstance(value, float) and not math.isfinite(value):
+        return None
+    if isinstance(value, dict):
+        return {key: _json_safe(item) for key, item in value.items()}
+    if isinstance(value, list):
+        return [_json_safe(item) for item in value]
+    return value
+
+
 def _model_json(model: BaseModel) -> dict:
-    return jsonable_encoder(model.model_dump(mode="python"), custom_encoder={Decimal: float})
+    return _json_safe(jsonable_encoder(model.model_dump(mode="python"), custom_encoder={Decimal: float}))
+
+
+@app.exception_handler(Exception)
+async def _unhandled_error(request, error):  # last resort: always a readable message
+    logger.exception("Unhandled error on %s", request.url.path)
+    return JSONResponse(status_code=500, content={"detail": f"Server error: {error.__class__.__name__}: {error}"})
 
 
 @app.get("/health", tags=["system"])
@@ -129,16 +193,24 @@ def health() -> dict[str, str]:
     return {"status": "ok"}
 
 
+@app.get("/health/ocr", tags=["system"])
+def ocr_health() -> JSONResponse:
+    """Report whether the Tesseract OCR engine (not just pytesseract) is usable."""
+
+    status = tesseract_status()
+    return JSONResponse(status_code=200 if status.available else 503, content=status.as_dict())
+
+
 @app.post("/extractions", tags=["extraction"])
 async def extract_drawing(
     file: UploadFile = File(...)
 ) -> JSONResponse:
-    """Extract structured construction elements from one PDF or SVG drawing."""
+    """Extract structured construction elements from one PDF, SVG or image drawing."""
 
-    suffix = Path(file.filename or "").suffix.lower()
-    supported = {".pdf", ".svg", *SUPPORTED_VISUAL_EXTENSIONS}
+    original_name = Path(file.filename or "drawing").name
+    suffix = Path(original_name).suffix.lower()
 
-    if suffix not in supported:
+    if suffix not in SUPPORTED_DRAWING_EXTENSIONS:
         return JSONResponse(
             status_code=415,
             content={
@@ -146,20 +218,41 @@ async def extract_drawing(
             },
         )
 
+    content = await file.read()
+    logger.info("Upload received: %s (%s bytes)", original_name, len(content))
+    if not content:
+        return JSONResponse(status_code=422, content={"detail": "Uploaded file is empty"})
+
+    # A fresh temporary directory per request: no previous result is reused.
     with TemporaryDirectory() as temporary_directory:
         source = Path(temporary_directory) / f"drawing{suffix}"
-        source.write_bytes(await file.read())
+        source.write_bytes(content)
 
         try:
             result = extraction_agent.extract(source)
+        except OCRUnavailableError as error:
+            logger.error("OCR unavailable: %s", error)
+            return JSONResponse(status_code=503, content={"detail": str(error)})
         except ValueError as error:
+            logger.warning("Extraction rejected: %s", error)
             return JSONResponse(
                 status_code=422,
                 content={"detail": str(error)},
             )
+        except Exception as error:
+            logger.exception("Extraction failed")
+            return JSONResponse(
+                status_code=502,
+                content={"detail": f"Extraction failed: {error.__class__.__name__}: {error}"},
+            )
 
     extraction_id = str(uuid4())
-    result = result.model_copy(update={"extraction_id": extraction_id})
+    result = result.model_copy(update={"extraction_id": extraction_id, "source_name": original_name})
+    logger.info(
+        "Extraction %s for %s: status=%s, %s element(s), %s annotation(s), %s unresolved",
+        extraction_id, original_name, result.status, len(result.elements),
+        len(result.dimension_annotations), len(result.unresolved),
+    )
     extraction_sessions[extraction_id] = result
     extraction_revisions[extraction_id] = 0
     return JSONResponse(content=_model_json(result))
@@ -300,6 +393,7 @@ def reopen_approved_boq(boq_id: str) -> JSONResponse:
     reopened = boq.model_copy(update={"status": BOQStatus.DRAFT})
     boq_sessions[boq_id] = reopened
     boq_recipe_overrides.pop(boq_id, None)
+    bom_approvals.pop(boq_id, None)
     return JSONResponse(content=jsonable_encoder(reopened, custom_encoder={Decimal: float}))
 
 
@@ -363,6 +457,7 @@ def set_boq_recipe_mapping(boq_id: str, mapping: BOQRecipeMapping) -> JSONRespon
         )
 
     boq_recipe_overrides.setdefault(boq_id, {})[mapping.item_number] = mapping.work_key
+    bom_approvals.pop(boq_id, None)  # a mapping change invalidates an earlier BOM approval
     return JSONResponse(
         content={
             "item_number": mapping.item_number,
@@ -392,3 +487,64 @@ def generate_bom(
             custom_encoder={Decimal: float},
         )
     )
+
+
+# --------------------------------------------------------------------------- step 06: BOM approval -> procurement
+@app.post("/boqs/{boq_id}/bom/approve", tags=["procurement"], status_code=201)
+def approve_bom_for_procurement(boq_id: str, approval: BOMApproval) -> JSONResponse:
+    """Human-in-the-loop gate: a named reviewer approves the BOM, which is then handed to procurement.
+
+    The BOM is regenerated on the server from the approved BOQ (client data is never trusted).
+    Blocked BOMs cannot be approved; warnings must be explicitly acknowledged.
+    """
+    boq = boq_sessions.get(boq_id)
+    if boq is None:
+        raise HTTPException(status_code=404, detail="BOQ review session was not found")
+    _require_current_boq(boq)
+    if boq.status.value != "APPROVED":
+        raise HTTPException(status_code=409, detail="The BOQ must be approved before the BOM can be approved")
+    approved_by = approval.approved_by.strip()
+    if not approved_by:
+        raise HTTPException(status_code=422, detail="Enter the name of the person approving the BOM")
+    if boq_id in bom_approvals:
+        raise HTTPException(status_code=409, detail="This BOM is already approved and handed to procurement. "
+                                                    "Reopen the BOQ to make changes and approve again.")
+    try:
+        bom = mapping_agent.run(boq, boq_recipe_overrides.get(boq_id, {}))
+    except ValueError as error:
+        raise HTTPException(status_code=422, detail=str(error)) from error
+    if bom.validation["status"] != "ready" or not bom.lines:
+        raise HTTPException(status_code=409, detail="The BOM has blocking review items. Resolve them before approval.")
+    warnings = bom.validation["warnings"]
+    if warnings and not approval.acknowledge_warnings:
+        raise HTTPException(status_code=409, detail=f"Review and acknowledge {len(warnings)} BOM warning(s) "
+                                                    "before approving for procurement.")
+    try:
+        handoff = handoff_approved_bom(
+            jsonable_encoder(bom), boq_id=boq_id, extraction_id=boq.extraction_id, source_name=boq.source_name,
+            approved_by=approved_by, comment=approval.comment, project_name=approval.project_name,
+            project_code=approval.project_code, procurement_project_id=approval.procurement_project_id,
+        )
+    except LookupError as error:
+        raise HTTPException(status_code=422, detail=str(error)) from error
+    record = {
+        "boq_id": boq_id, "approved_by": approved_by, "comment": approval.comment,
+        "warnings_acknowledged": warnings, "material_count": len(bom.lines), "total_cost": bom.total_cost,
+        "procurement": handoff,
+    }
+    bom_approvals[boq_id] = record
+    return JSONResponse(status_code=201, content=jsonable_encoder(record))
+
+
+@app.get("/boqs/{boq_id}/bom/approval", tags=["procurement"])
+def get_bom_approval(boq_id: str) -> JSONResponse:
+    boq = boq_sessions.get(boq_id)
+    record = bom_approvals.get(boq_id)
+    if boq is None or record is None:
+        raise HTTPException(status_code=404, detail="This BOM has not been approved for procurement")
+    try:
+        _require_current_boq(boq)
+    except HTTPException:
+        bom_approvals.pop(boq_id, None)  # source changed after approval
+        raise HTTPException(status_code=404, detail="The source changed after approval; approve the BOM again")
+    return JSONResponse(content=jsonable_encoder(record))

@@ -1,0 +1,9 @@
+work_key,thickness_min_mm,thickness_max_mm,thickness_from_dimension_width,volume_allowance_pct,note
+masonry,75,350,true,0,Wall thickness; reviewed wall width may be used
+sample_external_masonry,75,350,true,0,Wall thickness; reviewed wall width may be used
+sample_internal_masonry,75,350,true,0,Wall thickness; reviewed wall width may be used
+slab_area,75,400,false,0,Slab thickness must be stated on the BOQ line (e.g. 150 mm thick)
+bed,10,75,false,0,Mortar bed thickness must be stated; wall width is never a bed thickness
+plaster_ext,6,30,false,20,Plaster thickness must be stated; allowance for surface undulation and joint filling - verify against your specification / DAR
+plaster_int,6,30,false,20,Plaster thickness must be stated; allowance for surface undulation and joint filling - verify against your specification / DAR
+plaster_ceil,6,20,false,20,Plaster thickness must be stated; allowance for surface undulation - verify against your specification / DAR

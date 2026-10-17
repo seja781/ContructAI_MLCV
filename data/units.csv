@@ -1,0 +1,9 @@
+unit,countable
+bag,true
+nos,true
+sheet,true
+m3,false
+m2,false
+m,false
+kg,false
+L,false

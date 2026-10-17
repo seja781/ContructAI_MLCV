@@ -1,0 +1,12 @@
+trigger_work_key,expected_work_keys,quantity_factor,note
+masonry,plaster_int|plaster_ext,2,Plaster on both wall faces
+masonry,paint_int|paint_ext,2,Painting on both wall faces
+sample_external_masonry,plaster_int|plaster_ext,2,Plaster on both wall faces
+sample_internal_masonry,plaster_int,2,Plaster on both wall faces
+plaster_int,paint_int,1,Painting over internal plaster
+plaster_ext,paint_ext,1,Painting over external plaster
+plaster_ceil,paint_ceil,1,Painting over ceiling plaster
+slab,steel,,Reinforcement must come from structural drawings / bar bending schedule
+slab,formwork,,Formwork area = slab soffit + edges from drawings
+slab_area,steel,,Reinforcement must come from structural drawings / bar bending schedule
+slab_area,formwork,1,Formwork for slab soffit (add edges separately)

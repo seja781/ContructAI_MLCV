@@ -1,0 +1,213 @@
+{
+  "lines": [
+    {
+      "Material": "Cement OPC 43 grade (50 kg bag)",
+      "Category": "Cement & aggregates",
+      "Unit": "bag",
+      "Net qty": 148.0,
+      "Wastage %": 3.0,
+      "Order qty": 153,
+      "Rate (Rs)": 400.0,
+      "Cost (Rs)": 61200,
+      "Used in BOQ items": "1"
+    },
+    {
+      "Material": "Sand (river / M-sand)",
+      "Category": "Cement & aggregates",
+      "Unit": "m3",
+      "Net qty": 7.77,
+      "Wastage %": 5.0,
+      "Order qty": 8.16,
+      "Rate (Rs)": 1800.0,
+      "Cost (Rs)": 14688,
+      "Used in BOQ items": "1"
+    },
+    {
+      "Material": "Coarse aggregate 20 mm",
+      "Category": "Cement & aggregates",
+      "Unit": "m3",
+      "Net qty": 15.54,
+      "Wastage %": 3.0,
+      "Order qty": 16.01,
+      "Rate (Rs)": 1600.0,
+      "Cost (Rs)": 25616,
+      "Used in BOQ items": "1"
+    },
+    {
+      "Material": "Vitrified tiles 600x600 mm",
+      "Category": "Flooring & tiling",
+      "Unit": "m2",
+      "Net qty": 95.0,
+      "Wastage %": 7.0,
+      "Order qty": 101.65,
+      "Rate (Rs)": 550.0,
+      "Cost (Rs)": 55908,
+      "Used in BOQ items": "4"
+    },
+    {
+      "Material": "Tile adhesive (cement based)",
+      "Category": "Flooring & tiling",
+      "Unit": "kg",
+      "Net qty": 427.5,
+      "Wastage %": 5.0,
+      "Order qty": 448.88,
+      "Rate (Rs)": 18.0,
+      "Cost (Rs)": 8080,
+      "Used in BOQ items": "4"
+    },
+    {
+      "Material": "Tile grout",
+      "Category": "Flooring & tiling",
+      "Unit": "kg",
+      "Net qty": 28.5,
+      "Wastage %": 5.0,
+      "Order qty": 29.93,
+      "Rate (Rs)": 60.0,
+      "Cost (Rs)": 1796,
+      "Used in BOQ items": "4"
+    },
+    {
+      "Material": "Shuttering plywood 12 mm (8x4 ft)",
+      "Category": "Formwork",
+      "Unit": "sheet",
+      "Net qty": 10.8,
+      "Wastage %": 0.0,
+      "Order qty": 11,
+      "Rate (Rs)": 1400.0,
+      "Cost (Rs)": 15400,
+      "Used in BOQ items": "3"
+    },
+    {
+      "Material": "Nails",
+      "Category": "Formwork",
+      "Unit": "kg",
+      "Net qty": 3.6,
+      "Wastage %": 5.0,
+      "Order qty": 3.78,
+      "Rate (Rs)": 90.0,
+      "Cost (Rs)": 340,
+      "Used in BOQ items": "3"
+    },
+    {
+      "Material": "Interior acrylic emulsion paint",
+      "Category": "Paint & finishes",
+      "Unit": "L",
+      "Net qty": 52.7,
+      "Wastage %": 5.0,
+      "Order qty": 55.34,
+      "Rate (Rs)": 350.0,
+      "Cost (Rs)": 19369,
+      "Used in BOQ items": "5"
+    },
+    {
+      "Material": "Primer",
+      "Category": "Paint & finishes",
+      "Unit": "L",
+      "Net qty": 24.8,
+      "Wastage %": 5.0,
+      "Order qty": 26.04,
+      "Rate (Rs)": 220.0,
+      "Cost (Rs)": 5729,
+      "Used in BOQ items": "5"
+    },
+    {
+      "Material": "Wall putty",
+      "Category": "Paint & finishes",
+      "Unit": "kg",
+      "Net qty": 186.0,
+      "Wastage %": 5.0,
+      "Order qty": 195.3,
+      "Rate (Rs)": 28.0,
+      "Cost (Rs)": 5468,
+      "Used in BOQ items": "5"
+    },
+    {
+      "Material": "TMT rebar Fe500",
+      "Category": "Steel",
+      "Unit": "kg",
+      "Net qty": 1480.0,
+      "Wastage %": 3.0,
+      "Order qty": 1524.4,
+      "Rate (Rs)": 65.0,
+      "Cost (Rs)": 99086,
+      "Used in BOQ items": "2"
+    },
+    {
+      "Material": "Binding wire",
+      "Category": "Steel",
+      "Unit": "kg",
+      "Net qty": 17.76,
+      "Wastage %": 5.0,
+      "Order qty": 18.65,
+      "Rate (Rs)": 80.0,
+      "Cost (Rs)": 1492,
+      "Used in BOQ items": "2"
+    }
+  ],
+  "mapping": [
+    {
+      "BOQ item": "1",
+      "Description": "RCC slab concrete",
+      "Matched work item": "RCC slab concrete",
+      "Confidence": 1.0,
+      "Status": "OK"
+    },
+    {
+      "BOQ item": "2",
+      "Description": "Reinforcement steel slab",
+      "Matched work item": "reinforcement steel slab",
+      "Confidence": 1.0,
+      "Status": "OK"
+    },
+    {
+      "BOQ item": "3",
+      "Description": "Formwork shuttering slab soffit",
+      "Matched work item": "formwork shuttering slab soffit",
+      "Confidence": 1.0,
+      "Status": "OK"
+    },
+    {
+      "BOQ item": "4",
+      "Description": "Vitrified tile flooring dry areas",
+      "Matched work item": "vitrified tile flooring dry areas",
+      "Confidence": 1.0,
+      "Status": "OK"
+    },
+    {
+      "BOQ item": "5",
+      "Description": "Interior emulsion paint coats",
+      "Matched work item": "interior emulsion paint coats",
+      "Confidence": 1.0,
+      "Status": "OK"
+    }
+  ],
+  "warnings": [],
+  "validation": {
+    "status": "ready",
+    "errors": [],
+    "warnings": []
+  },
+  "total_cost": 314172,
+  "by_category": [
+    {
+      "Category": "Cement & aggregates",
+      "Cost (Rs)": 101504
+    },
+    {
+      "Category": "Steel",
+      "Cost (Rs)": 100578
+    },
+    {
+      "Category": "Flooring & tiling",
+      "Cost (Rs)": 65783
+    },
+    {
+      "Category": "Paint & finishes",
+      "Cost (Rs)": 30566
+    },
+    {
+      "Category": "Formwork",
+      "Cost (Rs)": 15740
+    }
+  ]
+}

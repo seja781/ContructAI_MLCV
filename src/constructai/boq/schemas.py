@@ -38,6 +38,7 @@ class BOQItem(BaseModel):
     dimensions: Dimensions | None = None
     dimensions_source: str | None = None
     element_id: str | None = None
+    host_element_id: str | None = None
     item_code: str | None = None
     source_element_ids: list[str] = Field(default_factory=list)
 

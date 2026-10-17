@@ -1,0 +1,56 @@
+# 1. Parties
+This Contractor Agreement is entered into on {{ today | date }} between {{ buyer.name | or_tba }}{% if buyer.address %}, {{ buyer.address }}{% endif %} ("Employer") and {{ contractor.name }}{% if contractor.address %}, {{ contractor.address }}{% endif %}{% if contractor.tax_id %} (Tax ID {{ contractor.tax_id }}){% endif %} ("Contractor").
+
+# 2. Project and Package
+Project: {{ project.name }}{% if project.code %} ({{ project.code }}){% endif +%}
+{% if project.location %}Location: {{ project.location }}
+{% endif %}
+Work package: {{ package.code }} - {{ package.name }}
+Arrangement: {{ package.arrangement_label }}
+
+# 3. Scope of Work
+{{ package.scope_of_work | or_tba }}
+
+# 4. Material Schedule
+{% if package.arrangement == "supply_and_execute" %}The Contractor shall supply and install the following materials:{% else %}The Contractor shall supply the following materials:{% endif +%}
+
+{{ schedule }}
+
+# 5. Contract Value
+Material value: INR {{ totals.material_value | money }}
+Execution / labour value: INR {{ totals.execution_value | money }}
+Subtotal: INR {{ totals.subtotal | money }}
+Tax at {{ package.tax_pct }}%: INR {{ totals.tax | money }}
+Total contract value: INR {{ totals.total | money }}
+
+# 6. Programme
+Start date: {{ package.start_date | date }}
+Completion date: {{ package.completion_date | date }}
+
+# 7. Milestones and Payment
+{% if milestones %}
+{% for ms in milestones %}
+{{ loop.index }}. {{ ms.name }} - due {{ ms.due_date | date }} - {{ ms.payment_pct }}% of contract value
+{% endfor %}
+{% else %}
+Milestones to be agreed.
+{% endif %}
+
+Payment terms: {{ package.payment_terms | or_tba }}
+
+# 8. Quality and Workmanship
+Work shall be executed as per approved drawings, specifications and good engineering practice. Defective work shall be rectified by the Contractor at its own cost.
+
+# 9. Safety and Site Conduct
+The Contractor shall comply with site safety rules and applicable statutory requirements, and is responsible for its personnel on site.
+
+# 10. Variations
+No variation to scope, quantity or price shall be valid unless approved in writing by the Employer.
+
+# 11. Termination and Disputes
+Either party may terminate for material breach not remedied after written notice. Disputes shall be resolved as per the governing law and jurisdiction agreed by the parties.
+{% if package.notes %}
+
+# 12. Special Conditions
+{{ package.notes }}
+{% endif %}

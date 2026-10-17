@@ -1,0 +1,9 @@
+{
+  "_note": "Import-format example only. Quantities are placeholders and rates are intentionally left blank — enter your own.",
+  "bom": { "id": "CAI-BOM-EXAMPLE", "name": "Example BOM (import format)" },
+  "items": [
+    { "id": "row-1", "item_code": "STR-01", "name": "Cement OPC 53 Grade", "specification": "IS 269; 50 kg bags", "category": "Structural", "quantity": 1200, "unit": "bag", "est_rate": null },
+    { "id": "row-2", "item_code": "STR-02", "name": "TMT Reinforcement Steel Fe500D", "specification": "IS 1786; 8-32 mm dia", "category": "Structural", "quantity": 85.5, "unit": "MT" },
+    { "id": "row-3", "item_code": "PLB-01", "name": "CPVC Pipe 25 mm", "specification": "SDR 11", "category": "Plumbing", "quantity": 640, "unit": "m" }
+  ]
+}

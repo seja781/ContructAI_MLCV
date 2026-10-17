@@ -2,10 +2,12 @@ from pathlib import Path
 
 import cv2
 import numpy as np
+import pytest
 from fastapi.testclient import TestClient
 
 from app.backend.main import app
 from constructai.extraction.agent import ExtractionAgent
+from constructai.extraction.ocr import tesseract_status
 from constructai.extraction.text_providers import SvgTextProvider
 
 
@@ -35,7 +37,14 @@ def test_extraction_endpoint_accepts_drawing_upload() -> None:
     assert response.json()["elements"][0]["specification"] == "Illustrative 230mm masonry wall assumption"
 
 
-def test_extraction_endpoint_accepts_floorplan_images() -> None:
+@pytest.mark.skipif(not tesseract_status().available, reason="Tesseract OCR executable not installed")
+def test_floorplan_image_without_text_returns_no_fabricated_elements() -> None:
+    """Shapes alone (no labels, no dimension text) must not become measured elements.
+
+    Previously this test expected rectangles to be returned as walls/doors/windows
+    classified only by their aspect ratio; on a real plan that produced hundreds
+    of unmeasured "elements" from text glyphs and room fills.
+    """
     client = TestClient(app)
     image = np.full((700, 900, 3), 255, dtype=np.uint8)
     cv2.rectangle(image, (60, 60), (420, 90), (0, 0, 0), thickness=10)
@@ -50,7 +59,10 @@ def test_extraction_endpoint_accepts_floorplan_images() -> None:
     )
 
     assert response.status_code == 200
-    assert response.json()["elements"]
+    body = response.json()
+    assert body["elements"] == []
+    assert body["status"] == "no_measurements"
+    assert body["warnings"]
 
 
 def test_extraction_endpoint_rejects_unsupported_files() -> None:

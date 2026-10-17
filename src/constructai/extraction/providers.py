@@ -10,3 +10,10 @@ class DocumentTextProvider(Protocol):
 
     def extract_pages(self, source: Path) -> list[str]:
         """Return one text value per source page."""
+
+class ExtractionProvider(Protocol):
+    """Interface for a complete drawing extraction provider."""
+
+    def extract(self, drawing: Path):
+        """Extract construction elements from a drawing."""
+        ...

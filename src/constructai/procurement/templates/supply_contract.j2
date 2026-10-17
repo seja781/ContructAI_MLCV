@@ -1,0 +1,43 @@
+# 1. Parties
+This Supply Agreement is entered into on {{ today | date }} between {{ buyer.name | or_tba }}{% if buyer.address %}, {{ buyer.address }}{% endif %} ("Buyer") and {{ vendor.name }}{% if vendor.address %}, {{ vendor.address }}{% endif %}{% if vendor.tax_id %} (Tax ID {{ vendor.tax_id }}){% endif %} ("Supplier").
+
+# 2. Project
+Project: {{ project.name }}{% if project.code %} ({{ project.code }}){% endif +%}
+{% if project.location %}Location: {{ project.location }}
+{% endif %}
+{% if project.client %}Client: {{ project.client }}
+{% endif %}
+Reference Purchase Order: {{ po.number }}{% if po.revision %} R{{ po.revision }}{% endif +%}
+
+# 3. Scope of Supply
+The Supplier shall supply the materials listed in the Material Schedule below, conforming to the stated specifications and quantities.
+
+{{ schedule }}
+
+# 4. Price
+The agreed contract value is INR {{ totals.subtotal | money }} exclusive of taxes. Applicable tax at {{ po.tax_pct }}% amounts to INR {{ totals.tax | money }}, giving a total of INR {{ totals.total | money }}. Rates are firm for the duration of this agreement unless revised in writing.
+
+# 5. Delivery
+Delivery address: {{ po.delivery_address | or_tba }}
+Delivery date: {{ po.delivery_date | date }}
+Materials shall be delivered with delivery challans and test certificates where applicable. Risk passes to the Buyer on acceptance at site.
+
+# 6. Inspection and Acceptance
+The Buyer may inspect materials on delivery and reject materials not conforming to the specifications. Rejected materials shall be replaced by the Supplier at its own cost.
+
+# 7. Payment Terms
+{{ po.payment_terms | or_tba }}
+
+# 8. Warranty
+The Supplier warrants that all materials are new, of merchantable quality and fit for the specified purpose.
+
+# 9. Termination
+Either party may terminate this agreement by written notice in the event of a material breach not remedied within the notice period agreed by the parties.
+
+# 10. Dispute Resolution
+Disputes shall first be resolved by mutual discussion, failing which as per the governing law and jurisdiction agreed by the parties.
+{% if po.notes %}
+
+# 11. Special Conditions
+{{ po.notes }}
+{% endif %}

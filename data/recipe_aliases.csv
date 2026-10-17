@@ -1,0 +1,16 @@
+work_key,match_text
+masonry,brick masonry wall
+masonry,brickwork in cement mortar
+slab_area,RCC slab
+slab_area,reinforced concrete slab
+slab,reinforced concrete slab volume
+steel,TMT reinforcement steel
+plaster_int,internal plaster
+plaster_int,cement plaster to internal walls
+plaster_ext,external plaster
+plaster_ext,cement plaster to external walls
+paint_int,internal wall painting emulsion
+paint_ext,external wall painting
+masonry,brick masonry external wall
+masonry,brick masonry internal wall
+window_nos,window

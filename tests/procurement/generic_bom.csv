@@ -1,0 +1,5 @@
+item_code,material,specification,category,quantity,unit,rate
+STR-01,Cement OPC 53 Grade,IS 269; 50 kg bags,Structural,1200,bag,
+STR-02,TMT Reinforcement Steel Fe500D,IS 1786; 8-32 mm dia,Structural,85.5,MT,
+STR-03,Ready Mix Concrete M25,IS 4926; 20 mm aggregate,Structural,420,cum,
+MAS-01,AAC Blocks,600x200x200 mm; IS 2185 Part 3,Masonry,3600,nos,
