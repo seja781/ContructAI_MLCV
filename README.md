@@ -104,6 +104,12 @@ npm install
 npm run dev
 ```
 
+The sidebar includes **House price prediction**. Enter a Pune locality, built-up area (250–10,000 sq ft), BHK, and
+apartment floor; total building floors are optional. The dashboard calls the trained model in
+`pune-house-price-step11/pune-house-price/models/house_price_model.joblib` through
+`GET /house-price/localities` and `POST /house-price/predict`. Install backend dependencies with
+`python -m pip install -e ".[dev]"` before starting the API.
+
 ## Tests
 
 ```powershell

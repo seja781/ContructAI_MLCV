@@ -1,6 +1,6 @@
 import { ChangeEvent, useEffect, useRef, useState } from "react";
 
-type Screen = "upload" | "extraction" | "boq" | "approval" | "bom" | "resources" | "procurement";
+type Screen = "upload" | "extraction" | "boq" | "approval" | "bom" | "resources" | "procurement" | "house-price";
 type BOQStatus = "DRAFT" | "REVIEW" | "APPROVED";
 type ElementReviewStatus = "pending" | "approved" | "rejected";
 
@@ -147,6 +147,26 @@ type ResourcePlan = {
   total_cost: number;
 };
 
+type HousePriceInput = {
+  locality: string;
+  bedrooms: number;
+  area_sqft: number;
+  floor_number: number;
+  total_floors: number | null;
+};
+
+type HousePriceEstimate = {
+  locality: string;
+  price_lakh: number;
+  low_lakh: number;
+  high_lakh: number;
+  rate_per_sqft: number;
+  price_period: string;
+  range_meaning: string;
+  notes: string[];
+  model_accuracy: Record<string, number>;
+};
+
 const API_BASE = import.meta.env.VITE_API_BASE ?? "/api";
 const unitOptions = ["m", "lm", "m2", "m3", "pcs", "nos", "unit", "kg", "ton", "l", "litre"];
 const steps: { id: Screen; label: string; number: string }[] = [
@@ -179,6 +199,31 @@ function App() {
   const [resources, setResources] = useState<ResourcePlan | null>(null);
   const [loading, setLoading] = useState<"extract" | "boq" | "review" | "bom" | "resources" | null>(null);
   const [error, setError] = useState("");
+  const [housePriceLocalities, setHousePriceLocalities] = useState<string[]>([]);
+  const [housePriceLocalitiesLoading, setHousePriceLocalitiesLoading] = useState(false);
+  const [housePriceLoading, setHousePriceLoading] = useState(false);
+  const [housePriceEstimate, setHousePriceEstimate] = useState<HousePriceEstimate | null>(null);
+
+  useEffect(() => {
+    if (screen !== "house-price" || housePriceLocalities.length > 0) return;
+    let active = true;
+    setHousePriceLocalitiesLoading(true);
+    void request<string[]>("/house-price/localities")
+      .then((localities) => {
+        if (active) setHousePriceLocalities(localities);
+      })
+      .catch((requestError) => {
+        if (active) setError(requestError instanceof Error ? requestError.message : "Could not load Pune localities");
+      })
+      .finally(() => {
+        if (active) setHousePriceLocalitiesLoading(false);
+      });
+    return () => { active = false; };
+  }, [screen, housePriceLocalities.length]);
+
+  useEffect(() => {
+    if (screen !== "house-price") setHousePriceEstimate(null);
+  }, [screen]);
 
   const extract = async (selectedFile: File) => {
     setFile(selectedFile);
@@ -435,17 +480,39 @@ function App() {
     }
   };
 
+  const predictHousePrice = async (input: HousePriceInput) => {
+    setError("");
+    setHousePriceEstimate(null);
+    setHousePriceLoading(true);
+    try {
+      const estimate = await request<HousePriceEstimate>("/house-price/predict", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(input),
+      });
+      setHousePriceEstimate(estimate);
+    } catch (requestError) {
+      setError(requestError instanceof Error ? requestError.message : "House price prediction failed");
+    } finally {
+      setHousePriceLoading(false);
+    }
+  };
+
+  const openHousePrice = () => {
+    setError("");
+    setScreen("house-price");
+  };
+
   const activeStep = steps.findIndex((step) => step.id === screen);
   const canNavigate = (step: Screen) => step === "upload" || (step === "extraction" && !!extraction) || (step === "boq" && !!boq) || (step === "approval" && boq?.status === "APPROVED") || (step === "bom" && !!bom) || (step === "resources" && !!resources) || (step === "procurement" && !!bomApproval);
 
   return (
     <main className="app-shell">
       <header className="topbar">
-        <button className="brand" type="button" onClick={() => setScreen("upload")} aria-label="Go to upload">
-          <span className="brand-mark">CF</span>
-          <span>ConstructAI_<em>MLCV</em></span>
+        <button className="brand" type="button" onClick={() => setScreen("upload")} aria-label="ConstGuide home - return to upload" title="Return to upload">
+          <span className="brand-mark">CG</span>
+          <span>ConstGuide</span>
         </button>
-        <div className="topbar-meta"><span>Project Atlas</span><span className="live-dot" /> <span>Milestone 1</span></div>
       </header>
 
       <div className="layout">
@@ -457,33 +524,138 @@ function App() {
                 <span className="step-number">{index < activeStep ? "✓" : step.number}</span><span>{step.label}</span>
               </button>
             ))}
+            <button type="button" className={`nav-step house-price-nav ${screen === "house-price" ? "active" : ""}`} onClick={openHousePrice}>
+              <span className="step-number">₹</span><span>House price prediction</span>
+            </button>
           </nav>
           <div className="sidebar-footer"><span className="status-ring" /> <span>API connected</span><small>Local workspace</small></div>
         </aside>
 
         <section className="content">
           <div className="content-header">
-            <div><p className="eyebrow">Technical intelligence / {steps[activeStep].number}</p><h1>{screen === "upload" ? "Start with the source drawing." : screen === "extraction" ? "Review extracted elements." : screen === "boq" ? "Shape the draft BOQ." : screen === "approval" ? "BOQ is ready for approval." : screen === "procurement" ? "Procure from the approved BOM." : screen === "resources" ? "Plan labour and equipment." : "Map quantities to materials."}</h1></div>
+            <div>
+              <p className="eyebrow">{screen === "house-price" ? "Property intelligence / Pune" : `Technical intelligence / ${steps[activeStep].number}`}</p>
+              <h1>{screen === "house-price" ? "Estimate a Pune home’s price." : screen === "upload" ? "Start with the source drawing." : screen === "extraction" ? "Review extracted elements." : screen === "boq" ? "Shape the draft BOQ." : screen === "approval" ? "BOQ is ready for approval." : screen === "procurement" ? "Procure from the approved BOM." : screen === "resources" ? "Plan labour and equipment." : "Map quantities to materials."}</h1>
+            </div>
             {boq && <span className={`status-badge ${boq.status.toLowerCase()}`}><span /> {boq.status}</span>}
           </div>
 
           {error && <div className="error-banner" role="alert"><strong>Something needs attention</strong><span>{error}</span><button type="button" onClick={() => setError("")} aria-label="Dismiss error">×</button></div>}
 
-          {screen === "upload" && <UploadScreen inputRef={inputRef} file={file} loading={loading === "extract"} onFileChange={onFileChange} />}
+          {screen === "upload" && <UploadScreen inputRef={inputRef} file={file} loading={loading === "extract"} onFileChange={onFileChange} onOpenHousePrice={openHousePrice} />}
           {screen === "extraction" && extraction && <HumanReviewExtractionScreen extraction={extraction} loading={loading === "boq" || loading === "review"} onEdit={updateExtractionElement} onReview={reviewElement} onGenerate={generateBOQ} />}
           {screen === "boq" && boq && <PersistentBOQScreen boq={boq} onEdit={updateItem} onSave={saveBOQItem} onSubmit={submitForReview} onApprove={approve} />}
           {screen === "approval" && boq && <ApprovalScreen boq={boq} loading={loading === "bom"} onBack={() => setScreen("boq")} onGenerateBOM={generateBOM} />}
           {screen === "bom" && boq && bom && <BOMScreen boq={boq} bom={bom} loading={loading === "bom" || loading === "resources"} onBack={() => setScreen("approval")} onReviewBOQ={reopenBOQ} onMapItem={mapBOQItem} onError={setError} resourcesReady={!!resources} onGenerateResources={generateResources} approval={bomApproval} onApproveBOM={approveBOM} onOpenProcurement={() => setScreen("procurement")} />}
           {screen === "resources" && boq && resources && <ResourcesScreen boq={boq} resources={resources} onBack={() => setScreen("bom")} />}
           {screen === "procurement" && bomApproval && <ProcurementScreen approval={bomApproval} onBack={() => setScreen("bom")} />}
+          {screen === "house-price" && <HousePriceScreen localities={housePriceLocalities} localitiesLoading={housePriceLocalitiesLoading} loading={housePriceLoading} estimate={housePriceEstimate} onPredict={predictHousePrice} />}
         </section>
       </div>
     </main>
   );
 }
 
-function UploadScreen({ inputRef, file, loading, onFileChange }: { inputRef: React.RefObject<HTMLInputElement | null>; file: File | null; loading: boolean; onFileChange: (event: ChangeEvent<HTMLInputElement>) => void }) {
-  return <div className="screen upload-screen"><div className="section-intro"><span className="section-index">01</span><div><h2>Upload a project drawing</h2><p>Bring in a PDF, SVG, or floor-plan image to identify measurable construction elements.</p></div></div><button className="drop-zone" type="button" onClick={() => inputRef.current?.click()}><span className="upload-icon">↑</span><strong>{loading ? "Reading drawing..." : file ? file.name : "Choose a drawing"}</strong><span>{loading ? "The extraction agent is processing your source" : "PDF, SVG, JPG, PNG, TIFF · one sheet at a time"}</span><span className="browse-label">Browse files</span></button><input ref={inputRef} className="visually-hidden" type="file" accept=".pdf,.svg,.png,.jpg,.jpeg,.bmp,.tif,.tiff,application/pdf,image/svg+xml,image/png,image/jpeg,image/bmp" onChange={onFileChange} /><div className="workflow-note"><span>Next</span><strong>Extraction results</strong><span>Detected elements stay linked to their source page and can be corrected by the reviewer.</span></div></div>;
+function UploadScreen({ inputRef, file, loading, onFileChange, onOpenHousePrice }: { inputRef: React.RefObject<HTMLInputElement | null>; file: File | null; loading: boolean; onFileChange: (event: ChangeEvent<HTMLInputElement>) => void; onOpenHousePrice: () => void }) {
+  return (
+    <div className="screen upload-screen">
+      <div className="section-intro">
+        <span className="section-index">01</span>
+        <div><h2>Upload a project drawing</h2><p>Bring in a PDF, SVG, or floor-plan image to identify measurable construction elements.</p></div>
+      </div>
+      <button className="drop-zone" type="button" onClick={() => inputRef.current?.click()}>
+        <span className="upload-icon">↑</span>
+        <strong>{loading ? "Reading drawing..." : file ? file.name : "Choose a drawing"}</strong>
+        <span>{loading ? "The extraction agent is processing your source" : "PDF, SVG, JPG, PNG, TIFF · one sheet at a time"}</span>
+        <span className="browse-label">Browse files</span>
+      </button>
+      <input ref={inputRef} className="visually-hidden" type="file" accept=".pdf,.svg,.png,.jpg,.jpeg,.bmp,.tif,.tiff,application/pdf,image/svg+xml,image/png,image/jpeg,image/bmp" onChange={onFileChange} />
+      <div className="upload-price-action">
+        <span>Looking for a Pune property estimate?</span>
+        <button className="primary-button" type="button" onClick={onOpenHousePrice}>House price prediction</button>
+      </div>
+      <div className="workflow-note">
+        <span>Next</span><strong>Extraction results</strong>
+        <span>Detected elements stay linked to their source page and can be corrected by the reviewer.</span>
+      </div>
+    </div>
+  );
+}
+
+function HousePriceScreen({ localities, localitiesLoading, loading, estimate, onPredict }: { localities: string[]; localitiesLoading: boolean; loading: boolean; estimate: HousePriceEstimate | null; onPredict: (input: HousePriceInput) => void }) {
+  const [form, setForm] = useState({ locality: "", bedrooms: "2", areaSqft: "", floorNumber: "", totalFloors: "" });
+  const formatRupees = (lakh: number) => `₹${Math.round(lakh * 100_000).toLocaleString("en-IN")}`;
+
+  return (
+    <div className="screen house-price-screen">
+      <div className="section-intro compact">
+        <span className="section-index">₹</span>
+        <div>
+          <h2>Get a Pune home price estimate</h2>
+          <p>Enter the property details to run the trained Pune listing model. Built-up area is required because the model uses it to estimate price.</p>
+        </div>
+      </div>
+      <form className="house-price-form" onSubmit={(event) => {
+        event.preventDefault();
+        void onPredict({
+          locality: form.locality.trim(),
+          bedrooms: Number(form.bedrooms),
+          area_sqft: Number(form.areaSqft),
+          floor_number: Number(form.floorNumber),
+          total_floors: form.totalFloors ? Number(form.totalFloors) : null,
+        });
+      }}>
+        <div className="house-price-grid">
+          <label>
+            <span>Location / locality *</span>
+            <input list="pune-localities" value={form.locality} onChange={(event) => setForm({ ...form, locality: event.target.value })} placeholder="e.g. Baner" required maxLength={120} autoComplete="off" />
+            <small>{localitiesLoading ? "Loading known Pune localities…" : "Choose a suggestion or enter a Pune locality."}</small>
+            <datalist id="pune-localities">{localities.map((locality) => <option key={locality} value={locality} />)}</datalist>
+          </label>
+          <label>
+            <span>Built-up area (sq ft) *</span>
+            <input type="number" value={form.areaSqft} onChange={(event) => setForm({ ...form, areaSqft: event.target.value })} min={250} max={10000} step={1} placeholder="e.g. 1050" required />
+            <small>Enter a value between 250 and 10,000 sq ft.</small>
+          </label>
+          <label>
+            <span>Bedrooms (BHK) *</span>
+            <select value={form.bedrooms} onChange={(event) => setForm({ ...form, bedrooms: event.target.value })} required>
+              {[1, 2, 3, 4, 5, 6].map((bedrooms) => <option key={bedrooms} value={bedrooms}>{bedrooms} BHK</option>)}
+            </select>
+          </label>
+          <label>
+            <span>Apartment floor *</span>
+            <input type="number" value={form.floorNumber} onChange={(event) => setForm({ ...form, floorNumber: event.target.value })} min={0} max={60} step={1} placeholder="e.g. 5" required />
+          </label>
+          <label>
+            <span>Total floors in building</span>
+            <input type="number" value={form.totalFloors} onChange={(event) => setForm({ ...form, totalFloors: event.target.value })} min={1} max={60} step={1} placeholder="Optional" />
+          </label>
+        </div>
+        <div className="house-price-actions">
+          <p>Price is an estimate based on similar Pune listings, not a formal valuation.</p>
+          <button className="primary-button" type="submit" disabled={loading}>{loading ? "Predicting price…" : "Predict house price →"}</button>
+        </div>
+      </form>
+
+      {estimate && (
+        <section className="price-result" aria-live="polite" aria-label="House price prediction">
+          <div className="price-result-heading"><span>Price predicted · {estimate.price_period}</span><strong>{estimate.price_lakh.toFixed(1)} lakh</strong><small>Approximately {formatRupees(estimate.price_lakh)}</small></div>
+          <div className="price-result-details">
+            <div><span>Likely price range</span><strong>₹{estimate.low_lakh.toFixed(1)}–₹{estimate.high_lakh.toFixed(1)} lakh</strong></div>
+            <div><span>Estimated rate</span><strong>₹{estimate.rate_per_sqft.toLocaleString("en-IN")} / sq ft</strong></div>
+            <div><span>Matched locality</span><strong>{estimate.locality}</strong></div>
+          </div>
+          <p className="price-range-note">{estimate.range_meaning}</p>
+          {estimate.notes.length > 0 && <ul className="price-notes">{estimate.notes.map((note) => <li key={note}>{note}</li>)}</ul>}
+          <p className="price-disclaimer">
+            Estimates can differ from actual sale prices.
+            {typeof estimate.model_accuracy.test_mae_lakh === "number" && ` On held-out listings, the model's MAE was ₹${estimate.model_accuracy.test_mae_lakh.toFixed(2)} lakh.`}
+          </p>
+        </section>
+      )}
+    </div>
+  );
 }
 
 function HumanReviewExtractionScreen({ extraction, loading, onEdit, onReview, onGenerate }: { extraction: ExtractionResult; loading: boolean; onEdit: (index: number, field: string, value: string) => void; onReview: (index: number, decision: "approved" | "rejected") => void; onGenerate: () => void }) {

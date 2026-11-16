@@ -1,6 +1,7 @@
 import logging
 import math
 import os
+import sys
 from pathlib import Path
 from tempfile import TemporaryDirectory
 from decimal import Decimal
@@ -54,6 +55,8 @@ app = FastAPI(
     version="0.1.0",
 )
 
+HOUSE_PRICE_PROJECT = Path(__file__).resolve().parents[2] / "pune-house-price-step11" / "pune-house-price"
+
 # Step 07 — procurement & vendor contracts (API: /procurement/api/..., UI: /procurement/ui/)
 app.mount("/procurement", create_procurement_app())
 
@@ -106,6 +109,40 @@ class BOMApproval(BaseModel):
 class BOQRecipeMapping(BaseModel):
     item_number: int = Field(ge=1)
     work_key: str
+
+
+class HousePriceRequest(BaseModel):
+    locality: str = Field(min_length=1, max_length=120)
+    bedrooms: int = Field(ge=1, le=6)
+    area_sqft: float = Field(ge=250, le=10000)
+    floor_number: int = Field(ge=0, le=60)
+    total_floors: int | None = Field(default=None, ge=1, le=60)
+
+
+class HousePriceEstimate(BaseModel):
+    locality: str
+    price_lakh: float
+    low_lakh: float
+    high_lakh: float
+    rate_per_sqft: int
+    price_period: str
+    range_meaning: str
+    notes: list[str]
+    model_accuracy: dict[str, int | float]
+
+
+def _house_price_predictor():
+    if not HOUSE_PRICE_PROJECT.is_dir():
+        raise HTTPException(status_code=503, detail="House price prediction model files are unavailable")
+    project_path = str(HOUSE_PRICE_PROJECT)
+    if project_path not in sys.path:
+        sys.path.insert(0, project_path)
+    try:
+        from house_price import predictor
+    except ModuleNotFoundError as error:
+        logger.exception("House price prediction dependencies are unavailable")
+        raise HTTPException(status_code=503, detail="House price prediction dependencies are unavailable") from error
+    return predictor
 
 
 def _get_extraction(extraction_id: str) -> ExtractionResult:
@@ -201,6 +238,33 @@ def ocr_health() -> JSONResponse:
 
     status = tesseract_status()
     return JSONResponse(status_code=200 if status.available else 503, content=status.as_dict())
+
+
+@app.get("/house-price/localities", response_model=list[str], tags=["house price"])
+def house_price_localities(search: str = "") -> list[str]:
+    predictor = _house_price_predictor()
+    try:
+        return predictor.localities(search)
+    except FileNotFoundError as error:
+        raise HTTPException(status_code=503, detail="House price prediction model is unavailable") from error
+
+
+@app.post("/house-price/predict", response_model=HousePriceEstimate, tags=["house price"])
+def predict_house_price(inputs: HousePriceRequest) -> HousePriceEstimate:
+    predictor = _house_price_predictor()
+    try:
+        prediction = predictor.predict(
+            locality=inputs.locality,
+            bedrooms=inputs.bedrooms,
+            area_sqft=inputs.area_sqft,
+            floor_number=inputs.floor_number,
+            total_floors=inputs.total_floors,
+        )
+    except predictor.PredictionError as error:
+        raise HTTPException(status_code=422, detail=str(error)) from error
+    except FileNotFoundError as error:
+        raise HTTPException(status_code=503, detail="House price prediction model is unavailable") from error
+    return HousePriceEstimate.model_validate(prediction)
 
 
 @app.post("/extractions", tags=["extraction"])

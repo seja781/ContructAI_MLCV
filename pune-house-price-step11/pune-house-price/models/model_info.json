@@ -1,0 +1,43 @@
+{
+  "saved_on": "2026-11-16",
+  "trained_on_flats": 63687,
+  "localities_known": 1310,
+  "model": "LightGBM + Random forest (blended) (70% LightGBM, 30% random forest): subsample_freq=1, subsample=0.8, reg_lambda=5, num_leaves=255, n_estimators=1200, min_child_samples=5, learning_rate=0.02, colsample_bytree=0.5, cat_smooth=5",
+  "price_range": {
+    "target_inside_pct": 80.0,
+    "widen_each_side_pct": 4.42,
+    "inside_before_calibration_pct": 68.3
+  },
+  "accuracy_on_unseen_test_flats": {
+    "test_flats": 12738,
+    "test_mae_lakh": 16.65,
+    "test_rmse_lakh": 35.96,
+    "test_mape_pct": 13.53,
+    "test_within_20_pct": 79.0,
+    "test_median_error_lakh": 7.8
+  },
+  "prices_are_from": "2024",
+  "inputs": [
+    "log_area",
+    "bedrooms",
+    "bathrooms",
+    "balconies",
+    "sqft_per_bedroom",
+    "bath_per_bedroom",
+    "floor_number",
+    "total_floors",
+    "floor_ratio",
+    "is_ground_floor",
+    "is_top_floor",
+    "is_high_rise",
+    "age_years",
+    "dist_city_centre_km",
+    "dist_hinjewadi_km",
+    "dist_kharadi_km",
+    "dist_airport_km",
+    "lat",
+    "lon",
+    "locality_group",
+    "property_type"
+  ]
+}

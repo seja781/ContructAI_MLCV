@@ -1,0 +1,293 @@
+{
+  "_doc": "House price feature settings. Edit values here, not in code.",
+  "city": "Pune",
+  "dataset": "pune_house_prices_combined.csv",
+  "price_unit": "INR lakh",
+  "price_adjustment": {
+    "_doc": "The listings are from 2024. Model prices are multiplied by 'factor' to show current prices. Update every quarter from NHB RESIDEX (https://residex.nhbonline.org.in/) or measure it from recent listings.",
+    "data_period": "2024",
+    "target_period": "Oct 2026",
+    "factor": 1.086,
+    "basis": "NHB RESIDEX Pune +4.6% YoY to Sep 2025 (official) x assumed +3.8% to Oct 2026 (3.5% per year, latest Pune rate)",
+    "updated_on": "2026-10-26",
+    "history": [
+      {
+        "updated_on": "2026-10-26",
+        "target_period": "Oct 2026",
+        "factor": 1.086,
+        "method": "NHB RESIDEX + estimate"
+      }
+    ]
+  },
+  "cleaning": {
+    "_doc": "Step 3 rules. Rows breaking a 'remove' rule are dropped; 'blank' rules empty one value but keep the row.",
+    "word_replacements": {
+      "bk": "budruk",
+      "bk.": "budruk",
+      "kh": "khurd",
+      "kh.": "khurd",
+      "rd": "road"
+    },
+    "aliases_file": "locality_aliases.csv",
+    "property_types": {
+      "Multistorey Apartment": "Apartment",
+      "Apartment": "Apartment",
+      "Builder Floor Apartment": "Builder Floor",
+      "Penthouse": "Penthouse",
+      "Studio Apartment": "Studio"
+    },
+    "age_years": {
+      "Under Construction": 0,
+      "New Construction": 0,
+      "Less than 5 years": 2.5,
+      "5 to 10 years": 7.5,
+      "10 to 15 years": 12.5,
+      "15 to 20 years": 17.5,
+      "Above 20 years": 25
+    },
+    "remove": {
+      "area_sqft": [
+        250,
+        10000
+      ],
+      "price_lakh": [
+        5,
+        2000
+      ],
+      "rate_per_sqft": [
+        2000,
+        40000
+      ],
+      "bedrooms": [
+        1,
+        6
+      ],
+      "max_extra_bathrooms": 2,
+      "max_total_floors": 60
+    },
+    "blank": {
+      "pune_latitude": [
+        18.2,
+        18.95
+      ],
+      "pune_longitude": [
+        73.4,
+        74.3
+      ]
+    }
+  },
+  "features": {
+    "_doc": "Step 4 settings. Landmark coordinates are approximate (checked against the median coordinates of listings in that locality).",
+    "min_listings_per_locality": 10,
+    "other_locality": "Other",
+    "landmarks": {
+      "city_centre": {
+        "name": "Shivajinagar",
+        "lat": 18.5303,
+        "lon": 73.8426
+      },
+      "hinjewadi_it_park": {
+        "name": "Hinjewadi Phase 1",
+        "lat": 18.5957,
+        "lon": 73.7221
+      },
+      "kharadi_it_park": {
+        "name": "Kharadi",
+        "lat": 18.5527,
+        "lon": 73.9454
+      },
+      "airport": {
+        "name": "Pune Airport (Lohegaon)",
+        "lat": 18.5821,
+        "lon": 73.9197
+      }
+    },
+    "high_rise_floors": 15
+  },
+  "split": {
+    "_doc": "Step 5. test_size = share of rows kept aside for the final test. Rows are split so both parts have the same mix of cheap and costly flats (price_bins).",
+    "test_size": 0.2,
+    "random_state": 42,
+    "price_bins": 10
+  },
+  "models": {
+    "_doc": "Step 6. Models compared with cross-validation on the TRAIN rows only (the test rows are not touched until step 8).",
+    "cv_folds": 5,
+    "random_state": 42,
+    "ridge": {
+      "alpha": 1.0
+    },
+    "random_forest": {
+      "n_estimators": 200,
+      "min_samples_leaf": 2,
+      "max_features": 0.5
+    },
+    "lightgbm": {
+      "n_estimators": 600,
+      "learning_rate": 0.05,
+      "num_leaves": 63,
+      "min_child_samples": 20,
+      "subsample": 0.8,
+      "subsample_freq": 1,
+      "colsample_bytree": 0.8
+    },
+    "lightgbm_tuned": {
+      "subsample_freq": 1,
+      "subsample": 0.8,
+      "reg_lambda": 5,
+      "num_leaves": 255,
+      "n_estimators": 1200,
+      "min_child_samples": 5,
+      "learning_rate": 0.02,
+      "colsample_bytree": 0.5,
+      "cat_smooth": 5,
+      "_note": "Saved settings rechecked on grouped 5-fold CV: MAE 18.35 lakh, RMSE 38.82 lakh, MAPE 14.47%; step 6 settings: MAE 18.94 lakh, RMSE 40.02 lakh, MAPE 14.81%. Earlier random-row search metrics are not comparable."
+    }
+  },
+  "tuning": {
+    "_doc": "Step 7. Random search: try n_trials random combinations of the LightGBM settings below, each scored with the same 5-fold cross-validation on train.csv. The best settings are written to models.lightgbm_tuned.",
+    "n_trials": 30,
+    "random_state": 42,
+    "search_space": {
+      "n_estimators": [
+        400,
+        800,
+        1200,
+        1600
+      ],
+      "learning_rate": [
+        0.02,
+        0.03,
+        0.05,
+        0.08
+      ],
+      "num_leaves": [
+        31,
+        63,
+        127,
+        255
+      ],
+      "min_child_samples": [
+        5,
+        10,
+        20,
+        40
+      ],
+      "subsample": [
+        0.7,
+        0.8,
+        0.9,
+        1.0
+      ],
+      "colsample_bytree": [
+        0.5,
+        0.7,
+        0.9
+      ],
+      "reg_lambda": [
+        0,
+        0.1,
+        1,
+        5
+      ],
+      "cat_smooth": [
+        5,
+        10,
+        20,
+        50
+      ]
+    }
+  },
+  "evaluation": {
+    "_doc": "Step 8. Models are trained on ALL of train.csv and scored ONCE on test.csv. Price bands are in INR lakh.",
+    "price_bands_lakh": [
+      0,
+      40,
+      70,
+      100,
+      150,
+      250,
+      2000
+    ],
+    "min_test_rows_per_locality": 30
+  },
+  "explain": {
+    "_doc": "Step 9. Explains the tuned LightGBM. Inputs are grouped into what the user types in the app (area, rooms, floors, region) plus 'other'.",
+    "groups": {
+      "Area (sqft)": [
+        "log_area",
+        "sqft_per_bedroom"
+      ],
+      "Rooms": [
+        "bedrooms",
+        "bathrooms",
+        "balconies",
+        "bath_per_bedroom"
+      ],
+      "Floors": [
+        "floor_number",
+        "total_floors",
+        "floor_ratio",
+        "is_ground_floor",
+        "is_top_floor",
+        "is_high_rise"
+      ],
+      "Region (locality + location)": [
+        "locality_group",
+        "lat",
+        "lon",
+        "dist_city_centre_km",
+        "dist_hinjewadi_km",
+        "dist_kharadi_km",
+        "dist_airport_km"
+      ],
+      "Other (age, property type)": [
+        "age_years",
+        "property_type"
+      ]
+    },
+    "permutation_repeats": 3,
+    "shap_sample_rows": 3000,
+    "random_state": 42,
+    "example_flat": {
+      "locality": "Baner",
+      "bedrooms": 2
+    }
+  },
+  "price_range": {
+    "_doc": "Step 10. Two extra LightGBM models predict a low and a high price (quantile regression). Their gap is then calibrated with 5-fold cross-validation on train.csv so that 'coverage' of real prices fall inside the range. test.csv is only used to check the result.",
+    "coverage": 0.8,
+    "low_quantile": 0.1,
+    "high_quantile": 0.9,
+    "cv_folds": 5,
+    "random_state": 42
+  },
+  "final_model": {
+    "_doc": "Step 11. The final models are trained once on ALL clean flats (train + test) and saved to models/. The price range is re-calibrated on all flats with the step 10 method.",
+    "train_on": "all",
+    "defaults": {
+      "_doc": "Used when the user leaves an input empty.",
+      "bathrooms": "same as bedrooms",
+      "property_type": "Apartment"
+    },
+    "input_limits": {
+      "area_sqft": [
+        250,
+        10000
+      ],
+      "bedrooms": [
+        1,
+        6
+      ],
+      "bathrooms": [
+        1,
+        8
+      ],
+      "total_floors": [
+        1,
+        60
+      ]
+    },
+    "top_reasons": 3
+  }
+}
