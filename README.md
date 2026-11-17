@@ -1,6 +1,6 @@
-# ConstructAI_MLCV
+# ConstGuide
 
-Milestone 1 foundation for the drawing-to-BOQ and material workflow.
+Construction drawing-to-BOQ, material procurement, and Pune house-price prediction.
 
 ## Backend
 
